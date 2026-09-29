@@ -7,3 +7,5 @@ local.properties
 *.onnx
 app/src/androidTest/assets/dogs.jpg
 *.log
+app/src/androidTest/assets/rotation-vfr.mp4
+screenshots/

@@ -25,7 +25,7 @@ class TemporalDepth {
             var error=0f;var count=0
             for(y in 4 until h-4 step 8)for(x in 4 until w-4 step 8){error+=abs(luma[y*w+x]-guide[(y+oy)*w+x+ox]);count++}
             error/=count.coerceAtLeast(1)
-            if(error<best){best=error;dx=ox;dy=oy}
+            if(error<best-1e-6f||(abs(error-best)<=1e-6f&&abs(ox)+abs(oy)<abs(dx)+abs(dy))){best=error;dx=ox;dy=oy}
         }
         if(best>.16f){previous=values.clone();gray=luma.clone();return values}
         val result=FloatArray(values.size)
@@ -43,6 +43,7 @@ class TemporalDepth {
 
 /** One owner/thread, cached CPU sessions, no GPU inference competing with the encoder. */
 class DepthEngine(private val context:Context):Closeable {
+    companion object { private val modelLock=Any() }
     private val env=OrtEnvironment.getEnvironment()
     private var depthSession:OrtSession?=null
     private var objectSession:OrtSession?=null
@@ -51,10 +52,10 @@ class DepthEngine(private val context:Context):Closeable {
     private var lastObjects=emptyList<SceneObject>()
     private var lastObjectTime=Long.MIN_VALUE
     @Volatile var canceled=false
-    private fun model(name:String,size:Long):File {
+    private fun model(name:String,size:Long):File = synchronized(modelLock) {
         val file=File(context.noBackupFilesDir,name)
         if(!file.exists()||file.length()!=size){val tmp=File(file.parent,"$name.tmp");context.assets.open(name).use{input->tmp.outputStream().use{input.copyTo(it)}};check(tmp.length()==size&&tmp.renameTo(file)){"Modell konnte nicht bereitgestellt werden: $name"}}
-        return file
+        file
     }
     private fun session(name:String,size:Long):OrtSession {
         return OrtSession.SessionOptions().use{opt->

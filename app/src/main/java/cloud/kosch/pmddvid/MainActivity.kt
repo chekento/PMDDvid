@@ -139,7 +139,7 @@ class MainActivity:ComponentActivity(){
                         recording?.close();recording=null;stopping=false;recordingFile=null;window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);requestedOrientation=ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
                         recordButton.text="●";recordButton.contentDescription="Videoaufnahme starten";clock.text="00:00";pauseButton.visibility=View.INVISIBLE
                         if(event.hasError()){file.delete();message("Aufnahme fehlgeschlagen (Code ${event.error}). Die unvollständige Datei wurde entfernt.")}
-                        else{runCatching{store.commit(file)}.onFailure{message(it.message?:"Dateiabschluss fehlgeschlagen")};setStatus("Gespeichert · ${file.name}");Toast.makeText(this,"Video in der Sammlung gespeichert",Toast.LENGTH_SHORT).show()}
+                        else{runCatching{store.commit(file)}.onSuccess{setStatus("Gespeichert · ${it.name}");Toast.makeText(this,"Video in der Sammlung gespeichert",Toast.LENGTH_SHORT).show()}.onFailure{setStatus("Speichern fehlgeschlagen");message(it.message?:"Dateiabschluss fehlgeschlagen")}}
                         if(!foreground)releaseCamera();updateRecordState()
                     }
                 }
@@ -179,7 +179,7 @@ class MainActivity:ComponentActivity(){
     private fun showConverter(uri:Uri){
         clearPage();page="converter";conversionInput=uri
         val box=pageLayout("Video-Konverter","Untertool · lokale Berechnung für bestehende Videos. Anzeigegröße, Quellzeitstempel und Ton werden erhalten; das Bild wird neu encodiert. HDR wird in SDR umgewandelt.")
-        box.addView(button("Look auswählen"){chooseStyle()});box.addView(button("PMDD einstellen"){depthSettings()})
+        box.addView(button("Look auswählen"){chooseStyle()}.also{controls+=it});box.addView(button("PMDD einstellen"){depthSettings()}.also{controls+=it})
         box.addView(label("Ausgabe: MPEG-4 / H.264 (MP4). AVI, MPEG, MOV und WebM lassen sich je nach Gerät und enthaltenem Codec lesen. Ein nicht unterstütztes Format wird gemeldet.",13f,muted))
         for((title,kind)in listOf("PMDD-Tiefenvideo" to "rendered","Tiefenkarte als Video" to "depth","Stereo · Side-by-Side" to "stereo")){
             box.addView(button(title){startConversion(uri,kind)}.also{controls+=it})

@@ -29,7 +29,7 @@ class PmddGl(private val external:Boolean,private val linearInput:Boolean=false)
             uniform float uTechnique,uWarmth,uStyleSaturation,uStyleContrast,uLevels,uStyleMix,uInk,uLift,uToning;
             uniform vec3 uTint,uShadow,uHighlight;
             float lum(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
-            vec3 source(vec2 p){vec2 uv=(uMatrix*vec4(clamp(p,vec2(.001),vec2(.999)),0.,1.)).xy;vec3 c=texture2D(uImage,uv).rgb;return mix(c,pow(max(c,vec3(0.)),vec3(1./2.2)),uLinear);}
+            vec3 source(vec2 p){vec2 uv=(uMatrix*vec4(clamp(p,vec2(0.),vec2(1.)),0.,1.)).xy;vec3 c=texture2D(uImage,uv).rgb;return mix(c,pow(max(c,vec3(0.)),vec3(1./2.2)),uLinear);}
             vec4 depthInfo(vec2 p){vec2 uv=(uDepthMatrix*vec4(p,0.,1.)).xy;float valid=step(0.,uv.x)*step(uv.x,1.)*step(0.,uv.y)*step(uv.y,1.);vec4 d=texture2D(uDepth,vec2(uv.x,1.-uv.y));d.a=valid;return d;}
             vec3 quantize(vec3 c){vec3 a=clamp(c,0.,1.)*max(1.,uLevels-1.);return (floor(a)+smoothstep(vec3(.18),vec3(.82),fract(a)))/max(1.,uLevels-1.);}
             void main(){
