@@ -1,5 +1,7 @@
 # PMDDvid
 
+[![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-5b4bdb)](LICENSE)
+
 Native Android video camera in the visual style of **PMDDcam 0.2.0**, with a local video converter as a secondary tool. By Kolja Werner Schumann (KoSch), developed with ChatGPT.
 
 The first preview is under verification. An installable APK is attached to a successful [Android build](https://github.com/chekento/PMDDvid/actions).
@@ -31,3 +33,28 @@ bash scripts/fetch-model.sh
 ```
 
 The preview signing key is intentionally public for reproducible preview upgrades. Use a private identity for production. Third-party model and runtime notices are in `app/src/main/assets/THIRD_PARTY.txt`.
+
+---
+
+## 🔐 License & commercial use
+
+Unless explicitly stated otherwise, the original software code authored for **PMDDvid** is licensed under the **PolyForm Noncommercial License 1.0.0**.
+
+**SPDX identifier:** `PolyForm-Noncommercial-1.0.0`  
+**Full license:** [LICENSE](LICENSE)
+
+This license permits use, modification and redistribution for permitted **noncommercial** purposes. Commercial use is **not licensed** under these terms. This includes, in particular, incorporating the software into commercial products or services, selling it, paid redistribution, or monetizing derivatives without a separate written commercial license from the copyright holder.
+
+**Commercial licensing:** Please obtain a separate written license from **Kolja Werner Schumann** before any commercial use.
+
+### Media, logos & promotional assets
+
+Unless a specific file says otherwise, original PMDDvid logos, screenshots, marketing graphics and promotional artwork are licensed under **Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)**. Commercial use and distribution of modified versions are not permitted under that media license.
+
+<https://creativecommons.org/licenses/by-nc-nd/4.0/>
+
+### Third-party components
+
+Third-party libraries, models, assets, trademarks and other third-party material remain subject to their own licenses and terms. The PolyForm license and the media license above do **not** relicense third-party material.
+
+Copyright © 2026 **Kolja Werner Schumann**. See [NOTICE.md](NOTICE.md).
