@@ -111,7 +111,8 @@ class MainActivity:ComponentActivity(){
                 if(chosen!=requested){qualityName=if(chosen==Quality.UHD)"UHD" else if(chosen==Quality.FHD)"FHD" else "HD";message("Die Kamera verwendet die unterstützte Auflösung $qualityName.")}
                 val rotation=p.display?.rotation?:Surface.ROTATION_0
                 val usePreview=Preview.Builder().setTargetRotation(rotation).build().also{it.setSurfaceProvider(p.surfaceProvider)}
-                val recorder=Recorder.Builder().setQualitySelector(QualitySelector.from(chosen)).build()
+                val bitrate=when(chosen){Quality.UHD->60_000_000;Quality.FHD->20_000_000;else->10_000_000}
+                val recorder=Recorder.Builder().setQualitySelector(QualitySelector.from(chosen)).setTargetVideoEncodingBitRate(bitrate).build()
                 val capture=VideoCapture.Builder(recorder).setTargetRotation(rotation).setMirrorMode(MirrorMode.MIRROR_MODE_OFF).build()
                 val live=LiveEffect(applicationContext){message,ready->runOnUiThread{
                     if(epoch==generation){modelReady=ready;setStatus(message);if(!ready&&recording!=null)stopRecording();updateRecordState()}

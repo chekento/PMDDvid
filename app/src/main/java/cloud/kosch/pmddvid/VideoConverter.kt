@@ -55,7 +55,8 @@ class VideoConverter(private val context:Context) {
     fun start(uri:Uri,file:File,recipe:Recipe,kind:String,done:(File)->Unit,error:(String)->Unit){
         check(transformer==null);canceled.set(false);frames.set(0);destination=file
         val effect=PmddVideoEffect(context,recipe.copy(),kind,frames,canceled)
-        val factory=DefaultEncoderFactory.Builder(context).setEnableFallback(false).build()
+        val settings=VideoEncoderSettings.Builder().experimentalSetEnableHighQualityTargeting(true).build()
+        val factory=DefaultEncoderFactory.Builder(context).setRequestedVideoEncoderSettings(settings).setEnableFallback(false).build()
         val listener=object:Transformer.Listener {
             override fun onCompleted(composition:Composition,exportResult:ExportResult){
                 transformer=null
