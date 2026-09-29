@@ -1,0 +1,1 @@
+This is an intentionally public development signing identity. It preserves preview updates; it is not a private production or Play Store key. Passwords: android / android. Use a private release identity for production.
