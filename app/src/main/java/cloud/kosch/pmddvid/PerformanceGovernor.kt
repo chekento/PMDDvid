@@ -23,7 +23,9 @@ object PerformanceGovernor {
             }
         return AnalysisPlan(
             intervalNs = maxOf(measured, thermalFloor) * 1_000_000L,
-            enabled = thermalStatus < 3,
+            // Always permit one bootstrap analysis so PMDD can become ready even if the
+            // device already reports severe heat. After that, severe heat pauses ML work.
+            enabled = lastInferenceMs <= 0L || thermalStatus < 3,
         )
     }
 }

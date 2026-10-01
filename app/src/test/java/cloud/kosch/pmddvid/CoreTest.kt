@@ -75,6 +75,7 @@ class CoreTest {
     fun thermalPressureProtectsTheVideoPath() {
         assertEquals(550_000_000L, PerformanceGovernor.plan(100, 1).intervalNs)
         assertEquals(850_000_000L, PerformanceGovernor.plan(100, 2).intervalNs)
+        assertTrue("Bootstrap analysis remains available when already hot", PerformanceGovernor.plan(0, 3).enabled)
         assertFalse(PerformanceGovernor.plan(100, 3).enabled)
         assertFalse(PerformanceGovernor.plan(100, 6).enabled)
     }
