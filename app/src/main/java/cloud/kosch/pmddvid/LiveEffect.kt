@@ -46,7 +46,6 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
         private set
 
     private var lastAnalysis = 0L
-    private var inputRotation = 0
     private var display = EGL14.EGL_NO_DISPLAY
     private var eglContext = EGL14.EGL_NO_CONTEXT
     private var dummy = EGL14.EGL_NO_SURFACE
@@ -122,7 +121,6 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
         try {
             initialize()
             makeCurrent(dummy)
-            request.setTransformationInfoListener(executor) { inputRotation = it.rotationDegrees }
             val ids = IntArray(1)
             glGenTextures(1, ids, 0)
             glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, ids[0])
@@ -189,18 +187,20 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
             input.stream.getTransformMatrix(raw)
             val now = System.nanoTime()
             val scene = recipe
+            val analysisOutput =
+                outputs.keys.firstOrNull { it.targets and CameraEffect.VIDEO_CAPTURE != 0 }
+                    ?: outputs.keys.firstOrNull()
             if (
-                !original &&
+                analysisOutput != null &&
+                    !original &&
                     now - lastAnalysis > 350_000_000L &&
                     analyzing.compareAndSet(false, true)
             ) {
                 lastAnalysis = now
-                val rotation = PmddGl.identity()
-                Matrix.translateM(rotation, 0, .5f, .5f, 0f)
-                Matrix.rotateM(rotation, 0, inputRotation.toFloat(), 0f, 0f, 1f)
-                Matrix.translateM(rotation, 0, -.5f, -.5f, 0f)
+                // Analyze exactly the oriented/cropped view CameraX supplies to the recorder.
+                // The saved matrix also maps a differently mirrored preview back to this depth.
                 val analysisMatrix = FloatArray(16)
-                Matrix.multiplyMM(analysisMatrix, 0, raw, 0, rotation, 0)
+                analysisOutput.updateTransformMatrix(analysisMatrix, raw)
                 val bitmap = renderer!!.sample(input.texture, analysisMatrix)
                 inference.execute {
                     try {
