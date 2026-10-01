@@ -4,18 +4,39 @@ import android.content.Context
 import android.graphics.SurfaceTexture
 import android.opengl.*
 import android.opengl.GLES20.*
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.PowerManager
 import android.view.Surface
 import androidx.camera.core.CameraEffect
 import androidx.camera.core.SurfaceOutput
 import androidx.camera.core.SurfaceProcessor
+import androidx.annotation.RequiresApi
 import androidx.camera.core.SurfaceRequest
 import androidx.core.util.Consumer
 import java.io.Closeable
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+
+@RequiresApi(29)
+private class ThermalWatcher(
+    private val power: PowerManager,
+    executor: Executor,
+    onStatus: (Int) -> Unit,
+) : Closeable {
+    private val listener = PowerManager.OnThermalStatusChangedListener(onStatus)
+
+    init {
+        onStatus(power.currentThermalStatus)
+        power.addThermalStatusListener(executor, listener)
+    }
+
+    override fun close() {
+        power.removeThermalStatusListener(listener)
+    }
+}
 
 class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit) :
     SurfaceProcessor, Closeable {
@@ -36,6 +57,15 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
     private val inference = Executors.newSingleThreadExecutor { r -> Thread(r, "PMDD-local-depth") }
     private val engine = DepthEngine(context.applicationContext)
     private val analyzing = AtomicBoolean(false)
+    @Volatile private var lastInferenceMs = 0L
+    @Volatile private var thermalStatus = 0
+    private val thermalWatcher: Closeable? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ThermalWatcher(
+                context.applicationContext.getSystemService(PowerManager::class.java),
+                executor,
+            ) { thermalStatus = it }
+        } else null
     @Volatile var recipe = Recipe()
     @Volatile var original = false
     @Volatile var depthOnly = false
@@ -196,13 +226,15 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
             input.stream.getTransformMatrix(raw)
             val now = System.nanoTime()
             val scene = recipe
+            val analysisPlan = PerformanceGovernor.plan(lastInferenceMs, thermalStatus)
             val analysisOutput =
                 outputs.keys.firstOrNull { it.targets and CameraEffect.VIDEO_CAPTURE != 0 }
                     ?: outputs.keys.firstOrNull()
             if (
                 analysisOutput != null &&
                     !original &&
-                    now - lastAnalysis > 350_000_000L &&
+                    analysisPlan.enabled &&
+                    now - lastAnalysis > analysisPlan.intervalNs &&
                     analyzing.compareAndSet(false, true)
             ) {
                 lastAnalysis = now
@@ -216,6 +248,7 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
                         val result =
                             engine.analyze(bitmap, analysisMatrix, now, scene.detectObjects)
                         if (!closing && !failed) {
+                            lastInferenceMs = result.inferenceMs
                             depth = result
                             state(
                                 "LIVE · ${result.objectCount} Objektanker · KI ${result.inferenceMs} ms",
@@ -264,6 +297,7 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
         if (closing) return
         closing = true
         engine.canceled = true
+        thermalWatcher?.close()
         inference.execute { engine.close() }
         inference.shutdown()
         handler.post {

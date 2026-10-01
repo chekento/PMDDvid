@@ -61,4 +61,21 @@ class CoreTest {
         val output = t.apply(FloatArray(4096) { .9f }, g, 64, 64)
         assertTrue(output.all { it > .85f })
     }
+    @Test
+    fun adaptiveAnalysisBacksOffForSlowInference() {
+        val fast = PerformanceGovernor.plan(100, 0)
+        val slow = PerformanceGovernor.plan(600, 0)
+        assertEquals(350_000_000L, fast.intervalNs)
+        assertEquals(900_000_000L, slow.intervalNs)
+        assertTrue(fast.enabled)
+        assertTrue(slow.enabled)
+    }
+
+    @Test
+    fun thermalPressureProtectsTheVideoPath() {
+        assertEquals(550_000_000L, PerformanceGovernor.plan(100, 1).intervalNs)
+        assertEquals(850_000_000L, PerformanceGovernor.plan(100, 2).intervalNs)
+        assertFalse(PerformanceGovernor.plan(100, 3).enabled)
+        assertFalse(PerformanceGovernor.plan(100, 6).enabled)
+    }
 }
