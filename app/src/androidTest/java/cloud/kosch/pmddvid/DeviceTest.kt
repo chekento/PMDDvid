@@ -437,6 +437,11 @@ class DeviceTest {
                 store.all().none { it.name !in existing } && SystemClock.uptimeMillis() < deadline
             ) SystemClock.sleep(200)
             val recorded = store.all().single { it.name !in existing }
+            evidence("camera-recording.mp4", recorded)
+            android.util.Log.i(
+                "PMDDvidTest",
+                "Camera frames=${track(recorded, "video/").pts.size}; duration=${track(recorded, "video/").format}",
+            )
             assertTrue(recorded.length() > 1000)
             assertTrue(
                 "Camera effect produces encoded video frames",
@@ -445,7 +450,6 @@ class DeviceTest {
             assertTrue("Microphone track present", track(recorded, "audio/").pts.isNotEmpty())
             val b = frame(recorded)
             assertTrue("Portrait video keeps correct orientation", b.height > b.width)
-            evidence("camera-recording.mp4", recorded)
             evidence("camera-recording.png", b)
             b.recycle()
             awaitUi(By.desc("Videos öffnen"), 10_000).click()

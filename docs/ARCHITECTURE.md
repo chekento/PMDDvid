@@ -4,7 +4,7 @@
 
 CameraX liefert einen `SurfaceTexture`-Stream. Ein eigener GL-Thread verarbeitet ihn mit `PmddGl` und schreibt in die von CameraX angebotenen Vorschau- und Recorder-Oberflächen. Für **jede** Oberfläche wird `SurfaceOutput.updateTransformMatrix` verwendet. Diese Transformation berücksichtigt Rotation, Crop und die gewünschte Spiegelung; Videoaufnahmen sind ausdrücklich nicht gespiegelt. Zeitstempel stammen aus dem Kamera-Stream und werden mit `eglPresentationTimeANDROID` weitergereicht.
 
-Die Tiefenanalyse tastet das gleiche RGB-Eingangsbild über eine bekannte Matrix ab. Zu jeder Tiefenkarte wird diese Matrix gespeichert. Im Shader bildet `inverse(AnalyseMatrix) × AusgabeMatrix` die Ausgabe auf die Tiefenkarte ab. Ein Frontkamera-Spiegelbild in der Vorschau kann so korrekt zur ungespiegelten Aufnahmedatei gehören.
+Die Tiefenanalyse tastet das gleiche RGB-Eingangsbild über die Ausgabematrix von CameraX ab; die Aufnahmeoberfläche wird bevorzugt. Zu jeder Tiefenkarte wird diese Matrix gespeichert. Im Shader bildet `inverse(AnalyseMatrix) × AusgabeMatrix` die Ausgabe auf die Tiefenkarte ab. Ein Frontkamera-Spiegelbild in der Vorschau kann so korrekt zur ungespiegelten Aufnahmedatei gehören.
 
 Ein einzelner CPU-Worker hält die ONNX-Sessions offen. Es gibt höchstens eine Analyse in Arbeit und keine anwachsende Frame-Warteschlange. Live wird frühestens nach 350 ms erneut analysiert; langsame Modelle reduzieren die Tiefenrate, nicht absichtlich die Encoder-Bildrate. 256×256-Pixel-Leseback und CPU-Inferenz brauchen trotzdem Zeit und Energie.
 

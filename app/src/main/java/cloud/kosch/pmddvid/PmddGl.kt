@@ -30,17 +30,19 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
             uniform sampler2D uDepth;
             uniform mat4 uMatrix,uDepthMatrix;
             uniform vec2 uPixel;
-            uniform float uLinear,uMode,uUseDepth,uDepthGain,uSeparation,uFocus,uRelief,uHaze,uBokeh,uSharp,uOcclusion,uExposure,uContrast,uSaturation,uVignette,uInvert,uEye;
+            const float uLinear=LINEAR_INPUT;
+            uniform float uMode,uUseDepth,uDepthGain,uSeparation,uFocus,uRelief,uHaze,uBokeh,uSharp,uOcclusion,uExposure,uContrast,uSaturation,uVignette,uInvert,uEye;
             uniform float uVivid,uTechnique,uWarmth,uStyleSaturation,uStyleContrast,uLevels,uStyleMix,uInk,uLift,uToning;
             uniform vec3 uTint,uShadow,uHighlight;
             float lum(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
-            vec3 source(vec2 p){vec2 uv=(uMatrix*vec4(clamp(p,vec2(0.),vec2(1.)),0.,1.)).xy;vec3 c=texture2D(uImage,uv).rgb;return mix(c,pow(max(c,vec3(0.)),vec3(1./2.2)),uLinear);}
+            vec3 source(vec2 p){vec2 uv=(uMatrix*vec4(clamp(p,vec2(0.),vec2(1.)),0.,1.)).xy;vec3 c=texture2D(uImage,uv).rgb;if(uLinear>.5)return pow(max(c,vec3(0.)),vec3(1./2.2));return c;}
             vec4 depthInfo(vec2 p){vec2 uv=(uDepthMatrix*vec4(p,0.,1.)).xy;float valid=step(0.,uv.x)*step(uv.x,1.)*step(0.,uv.y)*step(uv.y,1.);vec4 d=texture2D(uDepth,vec2(uv.x,1.-uv.y));d.a=valid;return d;}
             float guidedBase(vec2 p,float center){
               // Edge-preserving illumination from this frame only. Fixed tone endpoints avoid
               // exposure pumping and the live analysis worker cannot leave stale tone fields.
-              vec2 stepSize=uPixel*8.;float total=center,weight=1.;
+              vec2 stepSize=uPixel*8.;float total=center*2.,weight=2.;
               for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+                if(x==0&&y==0)continue;
                 float n=lum(source(p+vec2(float(x),float(y))*stepSize));
                 float w=1./(1.+625.*(n-center)*(n-center));total+=n*w;weight+=w;
               }
@@ -121,9 +123,10 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
             }
         """
 
-        fun fragment(external: Boolean) =
+        fun fragment(external: Boolean, linear: Boolean = false) =
             (if (external) "#extension GL_OES_EGL_image_external : require\n" else "") +
                 BODY.replace("SOURCE_TYPE", if (external) "samplerExternalOES" else "sampler2D")
+                    .replace("LINEAR_INPUT", if (linear) "1." else "0.")
     }
 
     private val program: Int
@@ -149,7 +152,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
             return s
         }
         val vertex = compile(GL_VERTEX_SHADER, VERTEX)
-        val frag = compile(GL_FRAGMENT_SHADER, fragment(external))
+        val frag = compile(GL_FRAGMENT_SHADER, fragment(external, linearInput))
         program = glCreateProgram()
         glAttachShader(program, vertex)
         glAttachShader(program, frag)
@@ -237,7 +240,6 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
         if (depth != null && Matrix.invertM(inverse, 0, depth.matrix, 0))
             Matrix.multiplyMM(mapping, 0, inverse, 0, matrix, 0)
         glUniformMatrix4fv(uniform("uDepthMatrix"), 1, false, mapping, 0)
-        f("uLinear", if (linearInput) 1f else 0f)
         f("uMode", mode.toFloat())
         f(
             "uUseDepth",

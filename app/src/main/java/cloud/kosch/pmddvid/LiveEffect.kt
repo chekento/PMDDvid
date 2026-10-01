@@ -52,7 +52,12 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
     private lateinit var config: EGLConfig
     private var renderer: PmddGl? = null
 
-    private data class Input(val texture: Int, val stream: SurfaceTexture, val surface: Surface)
+    private data class Input(
+        val texture: Int,
+        val stream: SurfaceTexture,
+        val surface: Surface,
+        var lastTimestamp: Long = Long.MIN_VALUE,
+    )
 
     private val inputs = mutableSetOf<Input>()
     private val outputs = linkedMapOf<SurfaceOutput, EGLSurface>()
@@ -183,6 +188,10 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
         try {
             makeCurrent(dummy)
             input.stream.updateTexImage()
+            // Multiple queued callbacks can refer to the same newest SurfaceTexture image.
+            // Rendering it twice wastes GPU time and gives the encoder duplicate timestamps.
+            if (input.stream.timestamp <= input.lastTimestamp) return
+            input.lastTimestamp = input.stream.timestamp
             val raw = FloatArray(16)
             input.stream.getTransformMatrix(raw)
             val now = System.nanoTime()
