@@ -197,13 +197,16 @@ class DeviceTest {
             )
             val output = ByteBuffer.allocateDirect(65536 * 4)
             glReadPixels(0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, output)
-            for (x in 1 until 255) assertTrue(
-                "No line at depth discontinuity",
-                abs(
-                    (output.get((128 * 256 + x) * 4).toInt() and 255) -
-                        (output.get((128 * 256 + x - 1) * 4).toInt() and 255)
-                ) <= 2,
+            fun redAt(x: Int) = output.get((128 * 256 + x) * 4).toInt() and 255
+            val left = redAt(64)
+            val right = redAt(192)
+            // Two planes may have different contrast; an artificial rim would add an extremum.
+            for (x in 120..136) assertTrue(
+                "No painted rim at depth discontinuity",
+                redAt(x) in (minOf(left, right) - 1)..(maxOf(left, right) + 1),
             )
+            for (x in 8..112) assertTrue("Flat foreground stays flat", abs(redAt(x) - left) <= 1)
+            for (x in 144..247) assertTrue("Flat background stays flat", abs(redAt(x) - right) <= 1)
             // Vivid opens photographed shadows and preserves highlight steps without a clock input.
             bytes.clear()
             for (y in 0 until 256) for (x in 0 until 256) {
