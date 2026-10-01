@@ -2,37 +2,73 @@
 
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-5b4bdb)](LICENSE)
 
-Native Android video camera in the visual style of **PMDDcam 0.2.0**, with a local video converter as a secondary tool. By Kolja Werner Schumann (KoSch), developed with ChatGPT.
+**PMDD direkt beim Filmen.** Native Android-Videokamera von Kolja Werner Schumann (KoSch), entwickelt mit ChatGPT. Die Oberfläche und die fotografische Tiefengestaltung orientieren sich an [PMDDcam 0.4.0](https://github.com/chekento/PMDDcam). Der Video-Konverter ist ein zusätzliches Werkzeug.
 
-The first preview is under verification. An installable APK is attached to a successful [Android build](https://github.com/chekento/PMDDvid/actions).
+> **0.1.0 · Android Preview:** Die [APK unter Releases](https://github.com/chekento/PMDDvid/releases) wird erst nach erfolgreichen Build- und Android-Tests veröffentlicht. [Aktuelle Prüfprotokolle](https://github.com/chekento/PMDDvid/actions). Die Preview ist noch keine Freigabe für alle Android-Geräte.
 
-- Fullscreen camera, front/rear switching, tap focus and pinch zoom.
-- Live PMDD processing is applied to both the preview and the recorded video through the same CameraX surface processor.
-- Continuous depth shading and detail enhancement from PMDDcam 0.2.0; no animated wave overlays or painted depth-edge shadows.
-- 60 video-adapted looks, adjustable depth, atmospheric separation and detail.
-- Original/PMDD switch, audio selection, torch, grid, pause/resume and resolution selection.
-- Bundled MiDaS and SSD models run locally on CPU in a single bounded analysis worker. The recorder does not wait for every neural inference.
-- Converter: PMDD rendering, depth-map video, or full-width stereoscopic side-by-side. Each decoded input frame is analyzed, using its source timestamp; no requested downscale or frame-rate reduction.
-- Local collection, playback, sharing, file export and gallery save. Imported originals remain untouched.
+## Filmen
 
-## Formats and limits
+- Dunkle Vollbildkamera, Mint-Akzente, drei kompakte Menüs und direkter Original/PMDD-Umschalter.
+- Rück- und Frontkamera, Tippen zum Fokussieren, Zwei-Finger-Zoom, Drittelraster und Dauerlicht, soweit die Kamera es unterstützt.
+- HD, Full HD oder UHD. Eine nicht verfügbare Aufnahmeauflösung wird gemeldet; die unterstützte Auswahl wird angezeigt.
+- PMDD verarbeitet **Vorschau und aufgezeichnete Bilddaten im selben CameraX-SurfaceProcessor**. Der Look ist anschließend im Video enthalten.
+- Aufnahme mit optionalem Mikrofon, Pause/Fortsetzen und sicherem Abschluss. Während der Aufnahme sind Kamera- und Lookwechsel gesperrt; die Ausrichtung bleibt fest.
+- 61 an Video angepasste Looks aus dem Fototool. Tiefe, Ebenentrennung, Detailzeichnung, Lichtrelief, Atmosphäre und Tiefenunschärfe sind einstellbar.
+- Lokale Videosammlung mit Wiedergabe, Teilen, Dateiexport, Galerieexport und Löschen. Android 8/9 exportiert über „Datei speichern“ oder „Teilen“.
 
-Recording and conversion output **MPEG-4 / H.264 in MP4**, SDR, 8-bit. AVI, MPEG, MOV, MP4 and WebM import depends on the container and codecs that the device can decode. No universal AVI/MPEG encoder is bundled. HDR input is tone-mapped to SDR. Codec/size errors are surfaced instead of silently lowering converter output resolution.
+## Ruhigere Tiefe
 
-Normal MP4 contains a fixed perceptual depth treatment, not a full volumetric scene or head tracking. SBS provides two estimated views for a compatible viewer. Live depth updates depend on device speed; the camera and video encoder run independently. Source frame preservation applies to offline conversion, not a guarantee that every physical camera exposure is delivered under overload.
+MiDaS schätzt eine kontinuierliche relative Tiefenkarte. SSD erkennt Objektbereiche und setzt vorsichtige Tiefenanker. Diese Bereiche sind **keine pixelgenauen Objektmasken**. Die App läuft vollständig offline; beide Modelle sind in der APK enthalten.
 
-Recordings are initially stored in private app storage. Save or share important clips; uninstalling removes app-private videos. Leaving the app stops recording. Microphone permission is optional. There is no INTERNET permission or cloud upload.
+Die Tiefe wird über ähnliche Bildinhalte zeitlich stabilisiert. Ein Szenenwechsel oder ein deutlicher Bildunterschied verwirft unpassende Historie. RGB-Bilder werden nicht miteinander überblendet. Die natürliche Vorgabe zeichnet keine künstlichen Tiefenkonturen, Reliefkanten oder Wellen ins Video. Die künstlerischen Looks dürfen eigene Linien und Raster enthalten.
 
-## Build
+Live läuft höchstens eine KI-Analyse gleichzeitig auf der CPU. Die Kamera muss nicht auf jede Analyse warten. Bei Bewegung wird unpassende oder zu alte Tiefe abgeschwächt. Der Konverter berechnet dagegen **jeden gelieferten Quellframe** einzeln. Das kann deutlich länger als die Videolaufzeit dauern.
 
-JDK 17, Android SDK 35, Build Tools 35.0.0. Models are fetched and SHA-256 verified at build time, then work offline.
+## Konverter
+
+Im Menü **Kamera und Werkzeuge → Video-Konverter** oder in der Videosammlung ein Video öffnen. Look und PMDD-Stärke einstellen, dann eine Ausgabe wählen:
+
+| Ausgabe | Inhalt und Abmessungen |
+|---|---|
+| PMDD-Tiefenvideo | Fotografischer Tiefenlook in der ursprünglichen Anzeigeauflösung |
+| Tiefenkarte | Geschätzte relative Tiefe als Graustufenvideo in der ursprünglichen Anzeigeauflösung |
+| Stereo Side-by-Side | Zwei geschätzte Ansichten; jede Ansicht hat die Quellauflösung, Gesamtbreite ist doppelt |
+
+Der Export verwendet die Quellzeitstempel und erhält den Ton. Es gibt keine absichtliche Frame-Auslassung, Bildratenreduktion oder Verkleinerung im Konverter. Die Rotation aus der Datei berücksichtigt der Media3-Decodierpfad. Eine nicht unterstützte Encodergröße führt zu einer Fehlermeldung. Neu encodiertes Video ist **nicht bitidentisch zum Original**; HDR wird nach SDR umgesetzt.
+
+## Formate und Grenzen
+
+**Ausgabe: MP4 mit H.264, Audio AAC, SDR/8 Bit.** AVI und MPEG bezeichnen andere Container beziehungsweise Formate. Die App enthält keinen universellen AVI-/MPEG-Encoder. MP4, MOV, WebM, AVI oder MPEG lassen sich nur importieren, wenn Media3 und der Android-Gerätedecoder den konkreten Container und Codec unterstützen.
+
+PMDD gestaltet die wahrgenommene Tiefe. Ein normales MP4 bleibt eine feste Ansicht; es reagiert beim Abspielen nicht auf Kopfbewegungen und enthält keine vollständige 3D-Szene. SBS benötigt einen geeigneten Stereo-/VR-Player. Die zweite Ansicht ist aus monokularer Tiefe geschätzt; verdeckte Rückseiten werden nicht rekonstruiert. Ein eigener Videocodec löst diese fehlende Bildinformation nicht.
+
+Die Live-Tiefenrate hängt vom Telefon ab. Es gibt keine Zusage, dass eine KI auf jedem Gerät 30 Tiefenkarten pro Sekunde erzeugt oder dass unter Überlast jede physische Kamera-Belichtung beim Encoder ankommt. Zuerst in HD/FHD testen; lange Aufnahmen und UHD benötigen entsprechend Speicher und Kühlung. Ein Emulator ersetzt keine Prüfung auf dem eigenen Telefon.
+
+## Speicher und Datenschutz
+
+Keine Internetberechtigung, keine Anmeldung und kein Upload. Kamera und Mikrofon werden erst nach Android-Freigabe verwendet. Ohne Mikrofonfreigabe kann ohne Ton aufgenommen werden.
+
+Aufnahmen und Konversionen liegen zunächst im privaten App-Speicher. Wichtige Videos mit **Datei speichern**, **In Galerie speichern** oder **Teilen** sichern; eine Deinstallation löscht den App-Speicher. Beim Verlassen der App wird eine laufende Aufnahme abgeschlossen. Unvollständige Exporte werden nicht als fertige Videos angezeigt. Importierte Originale werden nicht überschrieben.
+
+## Entwickeln
+
+JDK 17, Android SDK 35, Build Tools 35.0.0; Android ab Version 8 (API 26), ARM64 oder x86-64, OpenGL ES 2.0.
 
 ```sh
 bash scripts/fetch-model.sh
 ./gradlew testDebugUnitTest lintDebug assembleRelease
 ```
 
-The preview signing key is intentionally public for reproducible preview upgrades. Use a private identity for production. Third-party model and runtime notices are in `app/src/main/assets/THIRD_PARTY.txt`.
+Die Modellgewichte werden beim Build aus ihren offiziellen Quellen geladen und per SHA-256 geprüft. Zur Laufzeit wird nichts heruntergeladen. Für die Android-Gerätetests zusätzlich FFmpeg installieren:
+
+```sh
+bash scripts/make-test-video.sh
+./gradlew connectedDebugAndroidTest
+```
+
+Details zu Renderpfad, Prüfungen und Grenzen: [Architektur](docs/ARCHITECTURE.md), [Prüfplan](docs/VERIFICATION.md), [Änderungen](CHANGELOG.md). Fremdlizenzen stehen unter `app/src/main/assets/THIRD_PARTY.txt`.
+
+Der enthaltene Preview-Signierschlüssel ist absichtlich öffentlich, um Testversionen reproduzierbar als Update zu installieren. Für eine produktive oder monetarisierte Veröffentlichung einen privaten Signierschlüssel und eine eigene Versionsstrategie verwenden.
 
 ---
 

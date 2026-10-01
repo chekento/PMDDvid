@@ -2,6 +2,7 @@ name: Android build and verification
 on:
   push:
     branches: [main]
+    paths-ignore: ['**/*.md']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -96,3 +97,25 @@ jobs:
         with:
           name: device-test-results
           path: app/build/reports/androidTests/
+
+  publish:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [build, device-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: PMDDvid-install
+          path: release
+      - name: Publish verified Android Preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view v0.1.0 >/dev/null 2>&1; then
+            echo 'Version 0.1.0 already exists; its verified APK is immutable. Bump the version for another release.'
+          else
+            gh release create v0.1.0 release/* --target '${{ github.sha }}' --title 'PMDDvid 0.1.0 · Android Preview' --prerelease --notes 'Native PMDD-Videokamera im Stil von PMDDcam: gemeinsamer Live- und Aufnahmeeffekt, lokale KI-Tiefe, 60 Looks, Mikrofon und Pause, Videosammlung und MP4-Konverter. Build, Komponententests, Android Lint und Android-35-Gerätetests erfolgreich. Getestet im Emulator; Laufzeit und Bildwirkung auf physischen Telefonen sind geräteabhängig. Normale MP4-Dateien enthalten den festen Tiefenlook; Stereoexport enthält zwei geschätzte Ansichten. Siehe README und docs/VERIFICATION.md für Formate und Grenzen.'
+          fi

@@ -1,4 +1,8 @@
-plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
 android {
     namespace = "cloud.kosch.pmddvid"
     compileSdk = 35
@@ -11,14 +15,31 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
-    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
     kotlinOptions { jvmTarget = "17" }
     androidResources { noCompress += "onnx" }
-    signingConfigs { create("preview") { storeFile=rootProject.file("signing/pmddvid-preview.keystore");storePassword="android";keyAlias="androiddebugkey";keyPassword="android" } }
-    buildTypes { debug { signingConfig=signingConfigs.getByName("preview") }; release { isMinifyEnabled=false;signingConfig=signingConfigs.getByName("preview") } }
-    testOptions { unitTests.isIncludeAndroidResources=true }
-    lint { abortOnError=true }
+    signingConfigs {
+        create("preview") {
+            storeFile = rootProject.file("signing/pmddvid-preview.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+    buildTypes {
+        debug { signingConfig = signingConfigs.getByName("preview") }
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("preview")
+        }
+    }
+    testOptions { unitTests.isIncludeAndroidResources = true }
+    lint { abortOnError = true }
 }
+
 dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-ktx:1.9.3")
