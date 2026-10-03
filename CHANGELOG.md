@@ -1,5 +1,14 @@
 # Änderungen
 
+## 0.1.2 · Maximum Z Depth
+
+- Neuer signierter PMDD-Tiefenraum: Vordergrund **Z < 0**, Fokusebene **Z = 0**, Hintergrund **Z > 0**.
+- Standardtiefe auf **±4 Z-Einheiten** und Ebenentrennung auf Maximum gesetzt.
+- **32 weiche Tiefenlayer** als Standard; Layer wirken auf Relief, lokale Trennung, Atmosphäre, Bokeh und Stereo-Parallaxe, ohne harte Tiefenkonturen in RGB zu zeichnen.
+- Neue Regler für **3D-Z-Tiefe**, **Layeranzahl** und **Fokusebene Z = 0**.
+- Signed-Z- und Maximal-Layer-Verhalten durch Unit-Tests abgesichert.
+
+
 ## 0.1.0 · Android Preview
 
 - PMDD Vivid aus PMDDcam 0.4.0 als neuer Standard: offene Schatten, geschützte Lichter, weniger Dunst und begrenzte Schärfungssäume; Tonwertberechnung ausschließlich aus dem aktuellen Frame.
