@@ -754,7 +754,29 @@ class MainActivity : ComponentActivity() {
                 }
             )
         }
-        slider("Tiefenstärke", recipe.depth, 2.5f) { recipe.depth = it }
+        slider("3D-Z-Tiefe (±Z)", recipe.depth, 4f) { recipe.depth = it }
+        val layerCaption = label("Tiefenlayer · ${recipe.layers.roundToInt()} / 32", 14f)
+        box.addView(layerCaption)
+        box.addView(
+            SeekBar(this).apply {
+                max = 30
+                progress = recipe.layers.roundToInt().coerceIn(2, 32) - 2
+                setOnSeekBarChangeListener(
+                    object : SeekBar.OnSeekBarChangeListener {
+                        override fun onStartTrackingTouch(s: SeekBar) {}
+                        override fun onStopTrackingTouch(s: SeekBar) {}
+                        override fun onProgressChanged(s: SeekBar, value: Int, user: Boolean) {
+                            if (user) {
+                                recipe.layers = (value + 2).toFloat()
+                                layerCaption.text = "Tiefenlayer · ${value + 2} / 32"
+                                applyRecipe()
+                            }
+                        }
+                    }
+                )
+            }
+        )
+        slider("Fokusebene (Z = 0)", recipe.focus) { recipe.focus = it }
         slider("Ebenentrennung", recipe.separation) { recipe.separation = it }
         slider("Detailzeichnung", recipe.sharpness) { recipe.sharpness = it }
         slider("Lichtrelief", recipe.relief) { recipe.relief = it }
@@ -783,7 +805,7 @@ class MainActivity : ComponentActivity() {
         )
         box.addView(
             label(
-                "Ruhige, kontinuierliche Tiefe: keine künstlichen Tiefenlinien, keine bewegten Wellen. Hohe Werte verstärken den Look und können Details überzeichnen.",
+                "Signierter PMDD-Z-Raum: Vordergrund liegt auf negativem Z, die Fokusebene auf Z = 0 und der Hintergrund auf positivem Z. Bis zu 32 weiche Layer; keine eingebrannten Tiefenkonturen oder bewegten Wellen.",
                 12f,
                 muted,
             )
