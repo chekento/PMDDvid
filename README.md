@@ -4,7 +4,7 @@
 
 **PMDD direkt beim Filmen.** Native Android-Videokamera von Kolja Werner Schumann (KoSch), entwickelt mit ChatGPT. Die Oberfläche und die fotografische Tiefengestaltung orientieren sich an [PMDDcam 0.4.0](https://github.com/chekento/PMDDcam). Der Video-Konverter ist ein zusätzliches Werkzeug.
 
-> **0.1.2 · Android Preview:** Die [APK unter Releases](https://github.com/chekento/PMDDvid/releases) wird erst nach erfolgreichen Build- und Android-Tests veröffentlicht. [Aktuelle Prüfprotokolle](https://github.com/chekento/PMDDvid/actions). Die Preview ist noch keine Freigabe für alle Android-Geräte.
+> **0.1.2 · Android Preview — aktueller geprüfter Build:** [APK direkt herunterladen](https://github.com/chekento/PMDDvid/releases/download/v0.1.2/PMDDvid-0.1.2.apk) · [SHA-256](https://github.com/chekento/PMDDvid/releases/download/v0.1.2/SHA256SUMS.txt) · [Release v0.1.2](https://github.com/chekento/PMDDvid/releases/tag/v0.1.2) · [erfolgreicher Build + Android-Gerätetest](https://github.com/chekento/PMDDvid/actions/runs/37145846028). Die Preview ist noch keine Freigabe für alle Android-Geräte.
 
 ## Filmen
 
