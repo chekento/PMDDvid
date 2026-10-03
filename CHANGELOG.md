@@ -7,7 +7,15 @@
 - **32 weiche Tiefenlayer** als Standard; Layer wirken auf Relief, lokale Trennung, Atmosphäre, Bokeh und Stereo-Parallaxe, ohne harte Tiefenkonturen in RGB zu zeichnen.
 - Neue Regler für **3D-Z-Tiefe**, **Layeranzahl** und **Fokusebene Z = 0**.
 - Signed-Z- und Maximal-Layer-Verhalten durch Unit-Tests abgesichert.
+- Release **v0.1.2** erfolgreich durch Build- und Android-Gerätetest validiert; APK und SHA-256-Prüfsumme veröffentlicht.
 
+
+## 0.1.1 · Adaptive Live Depth
+
+- Live-Tiefenanalyse dynamisch an Inferenzdauer und Gerätezustand angepasst.
+- Thermal-Backoff reduziert die KI-Arbeitslast bei hoher Gerätetemperatur, ohne den initialen Tiefen-Bootstrap zu blockieren.
+- Kamera-Rendering bleibt von langsamer Tiefenanalyse entkoppelt; höchstens eine KI-Analyse läuft gleichzeitig.
+- Build-, Unit- und Android-Gerätetests für den adaptiven Pfad erfolgreich abgeschlossen.
 
 ## 0.1.0 · Android Preview
 
