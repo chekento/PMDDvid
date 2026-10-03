@@ -37,9 +37,9 @@ jobs:
       - name: Prepare APK
         run: |
           mkdir -p release
-          cp app/build/outputs/apk/release/app-release.apk release/PMDDvid-0.1.1.apk
+          cp app/build/outputs/apk/release/app-release.apk release/PMDDvid-0.1.2.apk
           cd release
-          sha256sum PMDDvid-0.1.1.apk > SHA256SUMS.txt
+          sha256sum PMDDvid-0.1.2.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: PMDDvid-install
@@ -114,8 +114,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          if gh release view v0.1.1 >/dev/null 2>&1; then
-            echo 'Version 0.1.1 already exists; its verified APK is immutable. Bump the version for another release.'
+          if gh release view v0.1.2 >/dev/null 2>&1; then
+            echo 'Version 0.1.2 already exists; its verified APK is immutable. Bump the version for another release.'
           else
-            gh release create v0.1.1 release/* --target '${{ github.sha }}' --title 'PMDDvid 0.1.1 · Android Preview' --prerelease --notes 'Native PMDD-Videokamera im Stil von PMDDcam: gemeinsamer Live- und Aufnahmeeffekt, lokale KI-Tiefe, PMDD Vivid und 61 Looks, adaptive lokale KI-Tiefe mit thermischem Backoff, Mikrofon und Pause, Videosammlung und MP4-Konverter. Build, Komponententests, Android Lint und Android-35-Gerätetests erfolgreich. Getestet im Emulator; Laufzeit und Bildwirkung auf physischen Telefonen sind geräteabhängig. Normale MP4-Dateien enthalten den festen Tiefenlook; Stereoexport enthält zwei geschätzte Ansichten. Siehe README und docs/VERIFICATION.md für Formate und Grenzen.'
+            gh release create v0.1.2 release/* --target '${{ github.sha }}' --title 'PMDDvid 0.1.2 · Android Preview' --prerelease --notes 'Native PMDD-Videokamera im Stil von PMDDcam: gemeinsamer Live- und Aufnahmeeffekt, lokale KI-Tiefe, PMDD Vivid und 61 Looks, signierter ±Z-Tiefenraum mit 32 Layern und maximaler Standardtiefe, adaptive lokale KI-Tiefe mit thermischem Backoff, Mikrofon und Pause, Videosammlung und MP4-Konverter. Build, Komponententests, Android Lint und Android-35-Gerätetests erfolgreich. Getestet im Emulator; Laufzeit und Bildwirkung auf physischen Telefonen sind geräteabhängig. Normale MP4-Dateien enthalten den festen Tiefenlook; Stereoexport enthält zwei geschätzte Ansichten. Siehe README und docs/VERIFICATION.md für Formate und Grenzen.'
           fi
