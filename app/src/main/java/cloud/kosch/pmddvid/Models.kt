@@ -5,9 +5,10 @@ import org.json.JSONObject
 
 /** All edits are a recipe. Neither this nor the renderer ever writes to the original. */
 data class Recipe(
-    var depth: Float = 1.25f,
-    var separation: Float = .8f,
-    var focus: Float = .6f,
+    var depth: Float = 4f,
+    var layers: Float = 32f,
+    var separation: Float = 1f,
+    var focus: Float = .5f,
     var relief: Float = .35f,
     var haze: Float = .06f,
     var bokeh: Float = .12f,
@@ -24,9 +25,10 @@ data class Recipe(
 ) {
     fun normalized(): Recipe =
         copy(
-            depth = depth.safe(1.25f, 0f, 2.5f),
-            separation = separation.safe(.8f),
-            focus = focus.safe(.6f),
+            depth = depth.safe(4f, 0f, 4f),
+            layers = layers.safe(32f, 2f, 32f),
+            separation = separation.safe(1f),
+            focus = focus.safe(.5f),
             relief = relief.safe(.35f),
             haze = haze.safe(.06f),
             bokeh = bokeh.safe(.12f),
@@ -80,6 +82,16 @@ data class Recipe(
 
 fun Float.safe(fallback: Float, min: Float = 0f, max: Float = 1f) =
     if (isFinite()) coerceIn(min, max) else fallback
+
+/** Signed PMDD depth space: foreground is negative Z, focus plane is 0, background is positive Z. */
+object DepthSpace {
+    fun signedZ(depth: Float, focus: Float, gain: Float): Float {
+        val d = depth.safe(.5f)
+        val f = focus.safe(.5f)
+        val g = gain.safe(0f, 0f, 4f)
+        return (f - d) * 2f * g
+    }
+}
 
 data class SceneObject(
     val id: Int,
