@@ -27,12 +27,28 @@ class CoreTest {
     @Test
     fun recipeClampsExtremeValues() {
         val r =
-            Recipe(depth = Float.NaN, separation = 5f, sharpness = -1f, style = "invalid")
+            Recipe(depth = Float.NaN, layers = 99f, separation = 5f, sharpness = -1f, style = "invalid")
                 .normalized()
-        assertEquals(1.25f, r.depth, 0f)
+        assertEquals(4f, r.depth, 0f)
+        assertEquals(32f, r.layers, 0f)
         assertEquals(1f, r.separation, 0f)
         assertEquals(0f, r.sharpness, 0f)
         assertEquals("vivid", r.style)
+    }
+
+    @Test
+    fun signedDepthUsesNegativeAndPositiveZ() {
+        assertEquals(-4f, DepthSpace.signedZ(1f, .5f, 4f), 0f)
+        assertEquals(0f, DepthSpace.signedZ(.5f, .5f, 4f), 0f)
+        assertEquals(4f, DepthSpace.signedZ(0f, .5f, 4f), 0f)
+    }
+
+    @Test
+    fun maximumDepthDefaultsUseAllLayers() {
+        val r = Recipe().normalized()
+        assertEquals(4f, r.depth, 0f)
+        assertEquals(32f, r.layers, 0f)
+        assertEquals(1f, r.separation, 0f)
     }
 
     @Test
