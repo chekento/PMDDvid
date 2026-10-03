@@ -6,6 +6,10 @@ CameraX liefert einen `SurfaceTexture`-Stream. Ein eigener GL-Thread verarbeitet
 
 Die Tiefenanalyse tastet das gleiche RGB-Eingangsbild über die Ausgabematrix von CameraX ab; die Aufnahmeoberfläche wird bevorzugt. Zu jeder Tiefenkarte wird diese Matrix gespeichert. Im Shader bildet `inverse(AnalyseMatrix) × AusgabeMatrix` die Ausgabe auf die Tiefenkarte ab. Ein Frontkamera-Spiegelbild in der Vorschau kann so korrekt zur ungespiegelten Aufnahmedatei gehören.
 
+### Signierter Z-Raum und Layer
+
+Die normalisierte monokulare Tiefe wird im Renderer um eine frei wählbare Fokusebene in einen signierten Raum überführt: **Vordergrund = negatives Z**, **Fokusebene = Z 0**, **Hintergrund = positives Z**. Der Standardbereich reicht bei maximaler Tiefenstärke ungefähr von **-4 bis +4**. 32 weiche Layer stabilisieren die wahrgenommene Staffelung; sie modulieren Parallaxe, Relief, lokale Kontrasttrennung, Atmosphäre und Defokus, zeichnen aber keine künstlichen Konturlinien in das RGB-Bild.
+
 Ein einzelner CPU-Worker hält die ONNX-Sessions offen. Es gibt höchstens eine Analyse in Arbeit und keine anwachsende Frame-Warteschlange. Live wird frühestens nach 350 ms erneut analysiert; langsame Modelle reduzieren die Tiefenrate, nicht absichtlich die Encoder-Bildrate. 256×256-Pixel-Leseback und CPU-Inferenz brauchen trotzdem Zeit und Energie.
 
 Die GL-Oberflächen werden erst freigegeben, wenn CameraX ihre Nutzung beendet hat. Fehler stoppen gegebenenfalls die Aufnahme und werden angezeigt. Wenn die KI nicht verfügbar ist, bleibt die Originalaufnahme erreichbar. Ein Grafikfehler benötigt einen erneuten Kamerastart; es gibt keine endlose Wiederholung auf einem verlorenen Gerät.
