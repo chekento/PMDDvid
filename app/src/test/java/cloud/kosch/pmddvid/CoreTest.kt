@@ -29,26 +29,29 @@ class CoreTest {
         val r =
             Recipe(depth = Float.NaN, layers = 99f, separation = 5f, sharpness = -1f, style = "invalid")
                 .normalized()
-        assertEquals(4f, r.depth, 0f)
-        assertEquals(32f, r.layers, 0f)
-        assertEquals(1f, r.separation, 0f)
+        assertEquals(6f, r.depth, 0f)
+        assertEquals(64f, r.layers, 0f)
+        assertEquals(1.5f, r.separation, 0f)
         assertEquals(0f, r.sharpness, 0f)
         assertEquals("vivid", r.style)
     }
 
     @Test
     fun signedDepthUsesNegativeAndPositiveZ() {
-        assertEquals(-4f, DepthSpace.signedZ(1f, .5f, 4f), 0f)
-        assertEquals(0f, DepthSpace.signedZ(.5f, .5f, 4f), 0f)
-        assertEquals(4f, DepthSpace.signedZ(0f, .5f, 4f), 0f)
+        assertEquals(-6f, DepthSpace.signedZ(1f, .5f, 6f), 0f)
+        assertEquals(0f, DepthSpace.signedZ(.5f, .5f, 6f), 0f)
+        assertEquals(6f, DepthSpace.signedZ(0f, .5f, 6f), 0f)
     }
 
     @Test
     fun maximumDepthDefaultsUseAllLayers() {
         val r = Recipe().normalized()
-        assertEquals(4f, r.depth, 0f)
-        assertEquals(32f, r.layers, 0f)
-        assertEquals(1f, r.separation, 0f)
+        assertEquals(6f, r.depth, 0f)
+        assertEquals(48f, r.layers, 0f)
+        assertEquals(1.15f, r.separation, 0f)
+        assertEquals(.72f, r.parallax, 0f)
+        assertEquals(.92f, r.edgeProtection, 0f)
+        assertEquals(.90f, r.trailSuppression, 0f)
     }
 
     @Test
@@ -58,7 +61,7 @@ class CoreTest {
         val a = FloatArray(4096) { .45f }
         t.apply(a, g, 64, 64)
         val output = t.apply(FloatArray(4096) { .50f }, g, 64, 64)
-        assertTrue(output.all { it < .48f && it > .45f })
+        assertTrue(output.all { it < .50f && it > .47f })
     }
 
     @Test
@@ -77,6 +80,24 @@ class CoreTest {
         val output = t.apply(FloatArray(4096) { .9f }, g, 64, 64)
         assertTrue(output.all { it > .85f })
     }
+
+    @Test
+    fun movingEdgeDoesNotAccumulateTemporalTrail() {
+        val t = TemporalDepth()
+        val w = 64
+        val h = 64
+        val firstLuma = FloatArray(w * h) { i -> if (i % w < 28) .1f else .9f }
+        val firstDepth = FloatArray(w * h) { i -> if (i % w < 28) .85f else .15f }
+        t.apply(firstDepth, firstLuma, w, h, 1f)
+        val secondLuma = FloatArray(w * h) { i -> if (i % w < 36) .1f else .9f }
+        val secondDepth = FloatArray(w * h) { i -> if (i % w < 36) .85f else .15f }
+        val output = t.apply(secondDepth, secondLuma, w, h, 1f)
+        for (y in 0 until h) {
+            assertTrue(output[y * w + 34] > .75f)
+            assertTrue(output[y * w + 38] < .25f)
+        }
+    }
+
     @Test
     fun adaptiveAnalysisBacksOffForSlowInference() {
         val fast = PerformanceGovernor.plan(100, 0)
