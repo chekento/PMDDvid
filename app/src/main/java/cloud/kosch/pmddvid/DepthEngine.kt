@@ -20,22 +20,35 @@ data class DepthFrame(
 )
 
 class TemporalDepth {
-    private var previous: FloatArray? = null
+    private var previousRaw: FloatArray? = null
     private var gray: FloatArray? = null
 
     fun reset() {
-        previous = null
+        previousRaw = null
         gray = null
     }
 
-    fun apply(values: FloatArray, luma: FloatArray, w: Int, h: Int): FloatArray {
-        val old = previous
+    /**
+     * One-frame, motion/edge-aware temporal stabilization.
+     *
+     * Important: the blended output is never fed back into history. History always stores the raw
+     * depth estimate from the previous analyzed frame, preventing recursive ghost trails.
+     */
+    fun apply(
+        values: FloatArray,
+        luma: FloatArray,
+        w: Int,
+        h: Int,
+        trailSuppression: Float = .9f,
+    ): FloatArray {
+        val old = previousRaw
         val guide = gray
         if (old == null || guide == null || old.size != values.size) {
-            previous = values.clone()
+            previousRaw = values.clone()
             gray = luma.clone()
             return values
         }
+
         var best = Float.POSITIVE_INFINITY
         var dx = 0
         var dy = 0
@@ -56,13 +69,29 @@ class TemporalDepth {
                 dy = oy
             }
         }
-        if (best > .16f) {
-            previous = values.clone()
+
+        // A scene change or large camera jump must never drag depth history into the new frame.
+        if (best > .105f) {
+            previousRaw = values.clone()
             gray = luma.clone()
             return values
         }
+
         val result = FloatArray(values.size)
         val movement = abs(dx) + abs(dy)
+        val suppression = trailSuppression.safe(.9f)
+        val staticHistory = .42f * (1f - suppression * .45f)
+        val movingHistory = .10f * (1f - suppression * .75f)
+
+        fun edge(field: FloatArray, x: Int, y: Int): Float {
+            val xl = max(0, x - 1)
+            val xr = min(w - 1, x + 1)
+            val yt = max(0, y - 1)
+            val yb = min(h - 1, y + 1)
+            return abs(field[y * w + xr] - field[y * w + xl]) +
+                abs(field[yb * w + x] - field[yt * w + x])
+        }
+
         for (y in 0 until h) for (x in 0 until w) {
             val i = y * w + x
             val px = x + dx
@@ -74,13 +103,38 @@ class TemporalDepth {
             val j = py * w + px
             val colorError = abs(luma[i] - guide[j])
             val delta = abs(values[i] - old[j])
-            val blend =
-                (if (movement == 0) .65f else .2f) *
-                    (1 - ((colorError - .025f) / .12f).coerceIn(0f, 1f)) *
-                    (1 - ((delta - .07f) / .2f).coerceIn(0f, 1f))
-            result[i] = values[i] * (1 - blend) + old[j] * blend
+            val currentEdge = edge(luma, x, y)
+            val oldEdge = edge(guide, px, py)
+
+            // Clamp history to the current local depth envelope so old foreground/background
+            // values cannot smear across a newly exposed edge.
+            var localMin = values[i]
+            var localMax = values[i]
+            for (oy in -1..1) for (ox in -1..1) {
+                val sx = (x + ox).coerceIn(0, w - 1)
+                val sy = (y + oy).coerceIn(0, h - 1)
+                val v = values[sy * w + sx]
+                localMin = min(localMin, v)
+                localMax = max(localMax, v)
+            }
+            val history = old[j].coerceIn(localMin - .018f, localMax + .018f)
+
+            val motionLike = movement > 0 || colorError > .028f
+            var blend = if (motionLike) movingHistory else staticHistory
+            blend *= 1f - ((colorError - .018f) / .075f).coerceIn(0f, 1f)
+            blend *= 1f - ((delta - .035f) / .13f).coerceIn(0f, 1f)
+
+            // Hard edges and disocclusions are "no-trail" zones.
+            val edgeStrength = max(currentEdge, oldEdge)
+            blend *= 1f - ((edgeStrength - .035f) / .16f).coerceIn(0f, 1f) * suppression
+            if (colorError > .09f || delta > .22f || (edgeStrength > .18f && delta > .045f))
+                blend = 0f
+
+            result[i] = values[i] * (1f - blend) + history * blend
         }
-        previous = result.clone()
+
+        // Store only the raw current estimate. Never accumulate a blurred temporal tail.
+        previousRaw = values.clone()
         gray = luma.clone()
         return result
     }
@@ -130,6 +184,7 @@ class DepthEngine(private val context: Context) : Closeable {
         matrix: FloatArray,
         timeNs: Long,
         detectObjects: Boolean = true,
+        trailSuppression: Float = .9f,
     ): DepthFrame {
         check(!canceled) { "Berechnung abgebrochen" }
         val begin = System.nanoTime()
@@ -185,7 +240,12 @@ class DepthEngine(private val context: Context) : Closeable {
                 confidence[i] = max(confidence[i], weight / .12f)
             }
         }
-        map = DepthMap(256, 256, temporal.apply(map.values, gray, 256, 256))
+        map =
+            DepthMap(
+                256,
+                256,
+                temporal.apply(map.values, gray, 256, 256, trailSuppression),
+            )
         val pixels = ByteBuffer.allocateDirect(65536 * 4).order(ByteOrder.nativeOrder())
         for (i in 0 until 65536) {
             pixels.put((map.values[i] * 255).roundToInt().toByte())
