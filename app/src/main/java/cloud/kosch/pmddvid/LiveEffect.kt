@@ -235,6 +235,7 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
             if (
                 analysisOutput != null &&
                     !original &&
+                    depthOnly &&
                     analysisPlan.enabled &&
                     now - lastAnalysis > analysisPlan.intervalNs &&
                     analyzing.compareAndSet(false, true)
@@ -259,7 +260,7 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
                             lastInferenceMs = result.inferenceMs
                             depth = result
                             state(
-                                "LIVE · ${result.objectCount} Objektanker · KI ${result.inferenceMs} ms",
+                                "TIEFENANSICHT · ${result.objectCount} Objektanker · KI ${result.inferenceMs} ms",
                                 true,
                             )
                         }
