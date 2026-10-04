@@ -9,6 +9,8 @@
 - RGB/Depth-Guide-Abgleich deutlich verschärft; Bereiche mit bereits kleiner Luma-Abweichung verlieren Depth-Vertrauen früher.
 - Stereo-/Offline-Konverter bleibt voll geometrisch, weil dort RGB und Depth synchron für denselben Quellframe berechnet werden.
 - Gemeinsamer Renderer erhält explizite Parameter für `depthTrust` und `geometryTrust`, statt intern inkompatible Live-/Medienzeitstempel zu vergleichen.
+- PMDD-Aufnahme wird sofort freigegeben; die lokale Depth ergänzt sich asynchron. Ein vorübergehender KI-Ausfall blockiert die Aufnahme nicht mehr.
+- Release **v0.1.4** erfolgreich durch Build, Unit-Tests, Android Lint und Android-35-Gerätetest validiert; APK und SHA-256-Prüfsumme veröffentlicht.
 
 ## 0.1.3 · Clean Motion / Deep Z
 
