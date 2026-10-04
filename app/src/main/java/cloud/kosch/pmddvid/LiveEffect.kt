@@ -297,6 +297,11 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
                 val liveGeometryTrust =
                     if (depthFrame == null) 0f
                     else (1f - ((sourceAge - .07f) / .11f)).coerceIn(0f, 1f)
+                // Depth-driven tone must expire almost as quickly as geometry. The previous wider
+                // decay window was visible as a bright halo on flat walls while panning.
+                val liveShadingTrust =
+                    if (depthFrame == null) 0f
+                    else (1f - ((sourceAge - .08f) / .18f)).coerceIn(0f, 1f)
                 renderer!!.draw(
                     input.texture,
                     matrix,
@@ -307,6 +312,7 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
                     if (original) 2 else if (depthOnly) 1 else 0,
                     depthTrust = liveDepthTrust,
                     geometryTrust = liveGeometryTrust,
+                    shadingTrust = liveShadingTrust,
                 )
                 EGLExt.eglPresentationTimeANDROID(display, surface, input.stream.timestamp)
                 check(EGL14.eglSwapBuffers(display, surface)) { "Videooberfläche wurde beendet" }
