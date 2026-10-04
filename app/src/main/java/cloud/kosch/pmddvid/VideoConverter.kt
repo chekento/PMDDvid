@@ -53,6 +53,7 @@ class PmddVideoEffect(
                                 identity,
                                 presentationTimeUs * 1000,
                                 recipe.detectObjects,
+                                recipe.trailSuppression,
                             )
                         } finally {
                             sample.recycle()
