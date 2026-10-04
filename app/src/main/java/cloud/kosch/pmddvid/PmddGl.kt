@@ -31,7 +31,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
             uniform mat4 uMatrix,uDepthMatrix;
             uniform vec2 uPixel;
             const float uLinear=LINEAR_INPUT;
-            uniform float uMode,uUseDepth,uGeometryTrust,uDepthGain,uLayers,uSeparation,uFocus,uRelief,uHaze,uBokeh,uSharp,uOcclusion,uExposure,uContrast,uSaturation,uVignette,uInvert,uEye,uParallax,uEdgeProtect;
+            uniform float uMode,uUseDepth,uGeometryTrust,uShadingTrust,uDepthGain,uLayers,uSeparation,uFocus,uRelief,uHaze,uBokeh,uSharp,uOcclusion,uExposure,uContrast,uSaturation,uVignette,uInvert,uEye,uParallax,uEdgeProtect;
             uniform float uVivid,uTechnique,uWarmth,uStyleSaturation,uStyleContrast,uLevels,uStyleMix,uInk,uLift,uToning;
             uniform vec3 uTint,uShadow,uHighlight;
             float lum(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
@@ -110,6 +110,14 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
               vec3 c=source(uv+vec2(0.,uPixel.y)),e=source(uv-vec2(0.,uPixel.y));
               vec3 soft=rgb*.25+(a+b+c+e)*.125+(source(uv+uPixel)+source(uv-uPixel)+source(uv+vec2(uPixel.x,-uPixel.y))+source(uv+vec2(-uPixel.x,uPixel.y)))*.0625;
               float gray=lum(rgb),detail=gray-lum(soft),edge=abs(lum(a)-lum(b))+abs(lum(c)-lum(e));
+              vec4 dl=depthInfo(uv-vec2(uPixel.x*2.,0.)),dr=depthInfo(uv+vec2(uPixel.x*2.,0.));
+              vec4 dt=depthInfo(uv-vec2(0.,uPixel.y*2.)),db=depthInfo(uv+vec2(0.,uPixel.y*2.));
+              float depthEdge=abs(dl.r-dr.r)+abs(dt.r-db.r);
+              // Large low-texture surfaces are where stale depth showed up as a bright trailing
+              // "shadow". Suppress depth-driven tone there unless RGB structure supports it.
+              float flatSurface=1.-smoothstep(.018,.075,edge);
+              float unsupportedDepth=smoothstep(.018,.11,depthEdge)*flatSurface;
+              float shadeTrust=uShadingTrust*trust*(1.-unsupportedDepth*uEdgeProtect);
               vec3 styled=rgb;float ink=1.-smoothstep(.025,.19,edge)*uInk;
               if(uTechnique>.5&&uTechnique<1.5)styled=quantize(mix(rgb,soft,.45))*ink;
               else if(uTechnique<2.5&&uTechnique>1.5)styled=quantize(mix(rgb,soft,.65))*.9+.1-edge*.06;
@@ -142,13 +150,13 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
               float retain=1.-uStyleMix*artistic*.86;
               if(uTechnique>5.5&&uTechnique<6.5)retain=1.-uStyleMix;
               float guard=1.-smoothstep(.055,.28,edge)*uEdgeProtect*.72;
-              float local=clamp(detail*(uSharp*(.35+nearZ*.85)+uRelief*gain*(.16+absZ*.72)+uSeparation*gain*(nearZ-farZ)*.39)*guard*retain,-.17,.17);
-              float contact=max(-.065,min(0.,detail)*uOcclusion*gain*.12*(.25+.75*nearZ)*guard*retain);
-              float contrast=clamp(uContrast+uSeparation*gain*(nearZ-farZ)*.115,-.5,.8);
-              float haze=min(.24,uHaze*pow(farZ,1.22)*(.18+.08*uSeparation)*min(gain,3.0))*(1.-uVivid*uStyleMix*.58);
-              float blur=min(.78,retain*smoothstep(.08,.88,absZ)*uBokeh*(.13+.10*gain)*clamp(1.-edge*2.5,.15,1.));
+              float local=clamp(detail*(uSharp*(.35+nearZ*.85)+uRelief*gain*(.16+absZ*.72)+uSeparation*gain*(nearZ-farZ)*.39)*guard*retain*shadeTrust,-.17,.17);
+              float contact=max(-.065,min(0.,detail)*uOcclusion*gain*.12*(.25+.75*nearZ)*guard*retain*shadeTrust);
+              float contrast=clamp(uContrast+uSeparation*gain*(nearZ-farZ)*.115*shadeTrust,-.5,.8);
+              float haze=min(.24,uHaze*pow(farZ,1.22)*(.18+.08*uSeparation)*min(gain,3.0))*(1.-uVivid*uStyleMix*.58)*shadeTrust;
+              float blur=min(.78,retain*smoothstep(.08,.88,absZ)*uBokeh*(.13+.10*gain)*clamp(1.-edge*2.5,.15,1.))*shadeTrust;
               float radial=length(vUv-.5)*1.414;
-              float zTone=(nearZ-farZ)*uSeparation*.055+nearZ*nearZ*.018-farZ*farZ*.012;
+              float zTone=((nearZ-farZ)*uSeparation*.055+nearZ*nearZ*.018-farZ*farZ*.012)*shadeTrust;
               float tone=local+contact+zTone+uExposure*.3-uVignette*radial*radial*.22;
               vec3 result=depthTone(mix(styled,soft,blur),contrast,tone);
               result=mix(result,vec3(.8,.87,.94),haze);result=mix(vec3(lum(result)),result,uSaturation);
@@ -245,6 +253,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
         eye: Float = 0f,
         depthTrust: Float = 1f,
         geometryTrust: Float = 1f,
+        shadingTrust: Float = 1f,
     ) {
         glUseProgram(program)
         val position = glGetAttribLocation(program, "aPosition")
@@ -279,6 +288,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
         f("uMode", mode.toFloat())
         f("uUseDepth", if (depth == null) 0f else depthTrust.coerceIn(0f, 1f))
         f("uGeometryTrust", if (depth == null) 0f else geometryTrust.coerceIn(0f, 1f))
+        f("uShadingTrust", if (depth == null) 0f else shadingTrust.coerceIn(0f, 1f))
         val r = recipe.normalized()
         val s = Styles.get(r.style)
         val radius = max(1f, min(width, height) / 280f)
