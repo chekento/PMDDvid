@@ -42,3 +42,10 @@ Die Quell-Datei wird nur gelesen. Eine Ausgabe liegt bis zum erfolgreichen Absch
 - [Media3 Transformer](https://developer.android.com/media/media3/transformer)
 - [MiDaS ONNX-Referenz](https://github.com/isl-org/MiDaS/blob/master/tf/run_onnx.py)
 - [SSD MobileNet V1-12](https://github.com/onnx/models/tree/main/validated/vision/object_detection_segmentation/ssd-mobilenetv1)
+
+
+## Anti-Trail 0.1.3
+
+Die temporale Stabilisierung speichert ausschließlich die rohe Tiefenschätzung des vorherigen Analyseframes. Das geglättete Resultat wird nicht rekursiv als Historie wiederverwendet. Vor der Mischung wird der historische Tiefenwert auf die lokale Tiefenumgebung des aktuellen Frames begrenzt; bei Scene-Cuts, großen Luma-/Depth-Abweichungen, Disocclusions oder starken Kanten fällt der History-Anteil bis auf null.
+
+Die zusätzliche monokulare Parallaxe arbeitet ausschließlich mit RGB des aktuellen Frames. Signed Z wird nichtlinear gespreizt, weich in bis zu 64 Ebenen quantisiert und anschließend für eine kleine, radial tiefenabhängige Reprojektion verwendet. Farb- und Tiefenkanten reduzieren die Verschiebung automatisch. Dadurch entsteht mehr Single-View-Raumwirkung, ohne RGB-Information aus älteren Frames nachzuziehen.
