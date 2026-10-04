@@ -1,5 +1,15 @@
 # Änderungen
 
+## 0.1.6 · Flicker-Free Live PMDD / Adaptive Icon
+
+- Reales 0.1.5-Testvideo geprüft: das sichtbare Flackern entstand, weil die asynchrone MiDaS-Depth bei jeder neuen Inferenz kurz wieder in den Live-Shader eintrat und danach aus dem Freshness-Fenster herauslief.
+- **Normale Live-Aufnahme ist jetzt vollständig current-frame-basiert.** Asynchrone KI-Depth verändert im Live-Pfad weder Geometrie noch Relief, Z-Tone, Haze, Bokeh oder lokale Kontraststaffelung.
+- Hintergrund-Depth-Inferenz wird während normaler Live-Aufnahme nicht mehr gestartet. Das reduziert zusätzlich CPU-/Thermal-Last und verhindert inferenzbedingte Frame-Jitter.
+- Die explizite Tiefenansicht darf weiterhin lokal MiDaS berechnen; der Offline-Konverter behält die volle synchronisierte KI-Tiefe für jeden Quellframe.
+- Damit kann stale/intermittent Depth im Live-Video weder als heller Nachzieher noch als pulsierender Schatten sichtbar werden.
+- Android-Launcher-Icon auf echte **mipmap/adaptive-icon**-Ressourcen umgestellt, inklusive Round-Icon und Android-Themed/Monochrome-Pfad.
+- Repository-Frontpage referenziert jetzt exakt dieselbe App-Icon-Ressource wie die Android-App.
+
 ## 0.1.5 · Flat-Surface Halo Kill
 
 - Reales 0.1.4-Video erneut frameweise geprüft: der verbliebene helle Nachzieher ist primär **stale depth shading** auf großen kontrastarmen Flächen, nicht mehr geometrische RGB-Reprojektion.
