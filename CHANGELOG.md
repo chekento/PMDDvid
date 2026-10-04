@@ -1,5 +1,16 @@
 # Änderungen
 
+## 0.1.7 · Movies Library / Native Launcher Icon
+
+- Fertige Aufnahmen und Konvertierungen werden unter Android 10+ automatisch in **Movies/PMDDvid** über MediaStore veröffentlicht. Die temporäre Arbeitsdatei im App-Speicher wird danach entfernt.
+- Die PMDDvid-Sammlung liest ihre Inhalte direkt aus **Movies/PMDDvid** statt aus einer versteckten App-internen Videokopie.
+- Videoverwaltung komplett überarbeitet: Vorschaubilder, Auflösung/Dauer/Dateigröße, Schnellaktionen für Öffnen, Teilen, Umbenennen und Löschen sowie eine übersichtliche Speicherzusammenfassung.
+- Player-Seite vereinfacht: Teilen, Umbenennen, Löschen, Konverter und optionaler Export einer zusätzlichen Kopie.
+- Kamera-/Werkzeugmenüs visuell überarbeitet: größere Karten, Icon-Bubbles, bessere Abstände, klare Titel/Subtitel und größere Touch-Ziele.
+- Launcher-Icon nicht mehr über einen Bitmap-Wrapper, sondern als echtes natives **Vector-/Adaptive-Icon** mit Kamera-, Play- und PMDD-Tiefenmotiv; separates Monochrome/Themed-Icon ergänzt.
+- Frontpage nutzt ein passendes SVG des gleichen PMDDvid-Icons.
+- Gerätetest prüft, dass neue Aufnahmen tatsächlich unter **Movies/PMDDvid** liegen und dass das installierte APK-Launcher-Icon geladen werden kann.
+
 ## 0.1.6 · Flicker-Free Live PMDD / Adaptive Icon
 
 - Reales 0.1.5-Testvideo geprüft: das sichtbare Flackern entstand, weil die asynchrone MiDaS-Depth bei jeder neuen Inferenz kurz wieder in den Live-Shader eintrat und danach aus dem Freshness-Fenster herauslief.
