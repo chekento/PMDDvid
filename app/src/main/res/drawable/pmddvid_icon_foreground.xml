@@ -1,0 +1,10 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:gravity="center">
+        <inset
+            android:drawable="@drawable/pmddvid_app_icon"
+            android:insetLeft="10%"
+            android:insetTop="10%"
+            android:insetRight="10%"
+            android:insetBottom="10%" />
+    </item>
+</layer-list>
