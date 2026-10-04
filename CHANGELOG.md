@@ -1,5 +1,14 @@
 # Änderungen
 
+## 0.1.5 · Flat-Surface Halo Kill
+
+- Reales 0.1.4-Video erneut frameweise geprüft: der verbliebene helle Nachzieher ist primär **stale depth shading** auf großen kontrastarmen Flächen, nicht mehr geometrische RGB-Reprojektion.
+- Neuer separater **Shading-Trust** zusätzlich zu Depth- und Geometry-Trust. Relief, Kontaktwirkung, lokale Kontraststaffelung, Haze, Bokeh und Z-Tone verfallen jetzt deutlich früher als die reine Tiefeninformation.
+- Neuer **Flat-Surface-Guard**: große RGB-arme Wandflächen mit nicht durch sichtbare Bildstruktur gestützten Depth-Kanten unterdrücken tonale Tiefeneffekte automatisch.
+- Der helle Z-Tone wird nur noch mit aktuellem, bildkonsistentem Shading-Trust angewendet; veraltete Tiefenfelder können dadurch keine helle Aura hinter Kameraschwenks stehen lassen.
+- Live-Geometrie bleibt weiterhin hart freshness-gated; Offline-Konverter behält synchrones Full-Depth-Rendering.
+- Neues PMDDvid-App-Icon für Android und Repository-Frontpage integriert.
+
 ## 0.1.4 · Live Depth Freshness / No-Trail Geometry
 
 - Schlieren aus dem realen 0.1.3-Testclip erneut analysiert. Hauptursache war nicht mehr RGB-Frame-Blending, sondern **geometrische Reprojektion mit einer bereits veralteten Tiefenkarte** während Kamerabewegung.
