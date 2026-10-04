@@ -243,6 +243,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
         depth: DepthFrame?,
         mode: Int = 0,
         eye: Float = 0f,
+        depthTrust: Float = 1f,
         geometryTrust: Float = 1f,
     ) {
         glUseProgram(program)
@@ -276,14 +277,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
             Matrix.multiplyMM(mapping, 0, inverse, 0, matrix, 0)
         glUniformMatrix4fv(uniform("uDepthMatrix"), 1, false, mapping, 0)
         f("uMode", mode.toFloat())
-        val depthAgeSeconds =
-            if (depth == null) Float.POSITIVE_INFINITY
-            else ((System.nanoTime() - depth.sourceNs).coerceAtLeast(0L) / 1e9f)
-        // Tonal/relief depth may decay gently, but geometry must be much stricter.
-        val depthTrust =
-            if (depth == null) 0f
-            else (1f - ((depthAgeSeconds - .18f) / 1.05f)).coerceIn(0f, 1f)
-        f("uUseDepth", depthTrust)
+        f("uUseDepth", if (depth == null) 0f else depthTrust.coerceIn(0f, 1f))
         f("uGeometryTrust", if (depth == null) 0f else geometryTrust.coerceIn(0f, 1f))
         val r = recipe.normalized()
         val s = Styles.get(r.style)
