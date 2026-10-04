@@ -8,6 +8,7 @@
 - Der helle Z-Tone wird nur noch mit aktuellem, bildkonsistentem Shading-Trust angewendet; veraltete Tiefenfelder können dadurch keine helle Aura hinter Kameraschwenks stehen lassen.
 - Live-Geometrie bleibt weiterhin hart freshness-gated; Offline-Konverter behält synchrones Full-Depth-Rendering.
 - Neues PMDDvid-App-Icon für Android und Repository-Frontpage integriert.
+- Release **v0.1.5** erfolgreich durch Build, Unit-Tests, Android Lint und Android-35-Gerätetest validiert; APK und SHA-256-Prüfsumme veröffentlicht.
 
 ## 0.1.4 · Live Depth Freshness / No-Trail Geometry
 
