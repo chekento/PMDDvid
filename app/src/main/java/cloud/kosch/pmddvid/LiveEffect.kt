@@ -285,34 +285,23 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
                 val matrix = FloatArray(16)
                 output.updateTransformMatrix(matrix, raw)
                 val depthFrame = depth
-                val sourceAge =
-                    if (depthFrame == null) Float.POSITIVE_INFINITY
-                    else ((now - depthFrame.sourceNs).coerceAtLeast(0L) / 1e9f)
-                // The uploaded real-world clips showed that geometric reprojection from a depth
-                // frame older than the visible RGB frame creates the apparent "trails".
-                // Shading may fade more slowly, geometry is disabled aggressively.
-                val liveDepthTrust =
-                    if (depthFrame == null) 0f
-                    else (1f - ((sourceAge - .18f) / .82f)).coerceIn(0f, 1f)
-                val liveGeometryTrust =
-                    if (depthFrame == null) 0f
-                    else (1f - ((sourceAge - .07f) / .11f)).coerceIn(0f, 1f)
-                // Depth-driven tone must expire almost as quickly as geometry. The previous wider
-                // decay window was visible as a bright halo on flat walls while panning.
-                val liveShadingTrust =
-                    if (depthFrame == null) 0f
-                    else (1f - ((sourceAge - .08f) / .18f)).coerceIn(0f, 1f)
+                // Real-device 0.1.5 footage showed visible pulsing because asynchronous MiDaS
+                // updates repeatedly entered and left the freshness window. Normal live PMDD must
+                // therefore be temporally invariant: no stale or intermittent depth map may alter
+                // geometry, tone, haze, relief or blur. The latest map is still available in the
+                // explicit depth preview, while the offline converter keeps full synchronized depth.
+                val liveDepth = if (depthOnly) depthFrame else null
                 renderer!!.draw(
                     input.texture,
                     matrix,
                     size.width,
                     size.height,
                     scene,
-                    depthFrame,
+                    liveDepth,
                     if (original) 2 else if (depthOnly) 1 else 0,
-                    depthTrust = liveDepthTrust,
-                    geometryTrust = liveGeometryTrust,
-                    shadingTrust = liveShadingTrust,
+                    depthTrust = if (depthOnly && liveDepth != null) 1f else 0f,
+                    geometryTrust = 0f,
+                    shadingTrust = 0f,
                 )
                 EGLExt.eglPresentationTimeANDROID(display, surface, input.stream.timestamp)
                 check(EGL14.eglSwapBuffers(display, surface)) { "Videooberfläche wurde beendet" }
