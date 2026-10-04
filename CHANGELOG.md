@@ -13,6 +13,7 @@
 - Neue Presets **Deep PMDD** und **Clean Depth** zusätzlich zur überarbeiteten Vivid-Standardvorgabe.
 - Live-Aufnahme und Video-Konverter verwenden dieselben Anti-Trail- und Tiefenparameter.
 - Neue Tests prüfen maximale Z-Werte, neue Layer-Grenzen und dass bewegte Tiefenkanten keine Historien-Schleppe aufbauen.
+- Release **v0.1.3** erfolgreich durch Build, Unit-Tests, Android Lint und Android-35-Gerätetest validiert; APK und SHA-256-Prüfsumme veröffentlicht.
 
 ## 0.1.2 · Maximum Z Depth
 
