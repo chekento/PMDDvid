@@ -281,14 +281,29 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
                 glViewport(0, 0, size.width, size.height)
                 val matrix = FloatArray(16)
                 output.updateTransformMatrix(matrix, raw)
+                val depthFrame = depth
+                val sourceAge =
+                    if (depthFrame == null) Float.POSITIVE_INFINITY
+                    else ((now - depthFrame.sourceNs).coerceAtLeast(0L) / 1e9f)
+                // The uploaded real-world clips showed that geometric reprojection from a depth
+                // frame older than the visible RGB frame creates the apparent "trails".
+                // Shading may fade more slowly, geometry is disabled aggressively.
+                val liveDepthTrust =
+                    if (depthFrame == null) 0f
+                    else (1f - ((sourceAge - .18f) / .82f)).coerceIn(0f, 1f)
+                val liveGeometryTrust =
+                    if (depthFrame == null) 0f
+                    else (1f - ((sourceAge - .07f) / .11f)).coerceIn(0f, 1f)
                 renderer!!.draw(
                     input.texture,
                     matrix,
                     size.width,
                     size.height,
                     scene,
-                    depth,
+                    depthFrame,
                     if (original) 2 else if (depthOnly) 1 else 0,
+                    depthTrust = liveDepthTrust,
+                    geometryTrust = liveGeometryTrust,
                 )
                 EGLExt.eglPresentationTimeANDROID(display, surface, input.stream.timestamp)
                 check(EGL14.eglSwapBuffers(display, surface)) { "Videooberfläche wurde beendet" }
