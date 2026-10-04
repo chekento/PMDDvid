@@ -246,7 +246,13 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
                 inference.execute {
                     try {
                         val result =
-                            engine.analyze(bitmap, analysisMatrix, now, scene.detectObjects)
+                            engine.analyze(
+                                bitmap,
+                                analysisMatrix,
+                                now,
+                                scene.detectObjects,
+                                scene.trailSuppression,
+                            )
                         if (!closing && !failed) {
                             lastInferenceMs = result.inferenceMs
                             depth = result
