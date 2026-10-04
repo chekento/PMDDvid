@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset=".52" stop-color="#10233b"/><stop offset="1" stop-color="#180b35"/></linearGradient>
+  <linearGradient id="button" x1="0" x2="1"><stop stop-color="#00c7ff"/><stop offset=".5" stop-color="#4777ff"/><stop offset="1" stop-color="#a238ff"/></linearGradient>
+  <linearGradient id="z" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#30d8ff"/><stop offset=".5" stop-color="#8bf4d5"/><stop offset="1" stop-color="#d14dff"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1600" height="520" rx="34" fill="url(#bg)"/>
+<circle cx="1320" cy="88" r="240" fill="#243dff" opacity=".10"/>
+<circle cx="1480" cy="430" r="260" fill="#ba39ff" opacity=".09"/>
+<text x="54" y="92" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="82" font-weight="800">PMDDvid</text>
+<text x="58" y="135" fill="#8bdcff" font-family="Arial,Helvetica,sans-serif" font-size="25" letter-spacing="7">TURN VIDEOS INTO 3D EXPERIENCES</text>
+<text x="58" y="186" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="27" font-weight="700">CLEAN MOTION · DEEP Z · REAL-TIME PMDD</text>
+
+<rect x="54" y="230" width="655" height="122" rx="34" fill="url(#button)" filter="url(#glow)"/>
+<text x="101" y="283" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="48" font-weight="800">DOWNLOAD APK</text>
+<text x="103" y="325" fill="#eaf6ff" font-family="Arial,Helvetica,sans-serif" font-size="25">PMDDvid 0.1.7 · Verified Android Preview</text>
+<path d="M640 268v40m-16-16 16 16 16-16m-35 33h38" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+<g transform="translate(806,52)">
+  <rect width="728" height="378" rx="34" fill="#07101a" stroke="#4aa8ff" stroke-width="2"/>
+  <rect x="34" y="30" width="660" height="52" rx="18" fill="#0f1f31"/>
+  <text x="61" y="65" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700">PMDD 0.1.7 · MAXIMUM DEPTH PIPELINE</text>
+
+  <g transform="translate(55,119)">
+    <rect x="0" y="0" width="118" height="190" rx="18" fill="#0e1f30" stroke="#2ed8ff"/>
+    <text x="59" y="38" text-anchor="middle" fill="#84f0d5" font-family="Arial" font-size="24" font-weight="700">+6 Z</text>
+    <rect x="51" y="55" width="16" height="85" rx="8" fill="url(#z)"/>
+    <circle cx="59" cy="97" r="12" fill="#fff"/>
+    <text x="59" y="169" text-anchor="middle" fill="#fff" font-family="Arial" font-size="20">−6 Z</text>
+  </g>
+
+  <g transform="translate(205,110)" font-family="Arial,Helvetica,sans-serif">
+    <text x="0" y="28" fill="#fff" font-size="25" font-weight="700">Movies Library / Native Icon</text>
+    <text x="0" y="70" fill="#b9cbe0" font-size="21">✓ Shading trust + geometry trust</text>
+    <text x="0" y="106" fill="#b9cbe0" font-size="21">✓ Flat-surface halo suppression</text>
+    <text x="0" y="142" fill="#b9cbe0" font-size="21">✓ Fresh-depth-only live tone</text>
+    <text x="0" y="178" fill="#b9cbe0" font-size="21">✓ 48 default / 64 max layers</text>
+    <text x="0" y="214" fill="#b9cbe0" font-size="21">✓ Signed Z focus plane at 0</text>
+  </g>
+</g>
+
+<g font-family="Arial,Helvetica,sans-serif" font-size="20" fill="#dfefff">
+  <text x="58" y="416">✓ Build + Unit Tests</text>
+  <text x="286" y="416">✓ Android Lint</text>
+  <text x="474" y="416">✓ Android-35 Device Test</text>
+  <text x="58" y="458" fill="#86f1d1">v0.1.7 · Movies Library / Native Icon</text>
+</g>
+</svg>
