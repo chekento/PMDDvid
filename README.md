@@ -1,4 +1,4 @@
-[![Download PMDDvid 0.1.3 APK](docs/images/download-apk-banner.webp)](https://github.com/chekento/PMDDvid/releases/download/v0.1.3/PMDDvid-0.1.3.apk)
+[![Download PMDDvid 0.1.3 APK](docs/images/download-apk-banner-0.1.3.svg)](https://github.com/chekento/PMDDvid/releases/download/v0.1.3/PMDDvid-0.1.3.apk)
 
 # PMDDvid
 
@@ -6,14 +6,14 @@
 
 **PMDD direkt beim Filmen.** Native Android-Videokamera von Kolja Werner Schumann (KoSch), entwickelt mit ChatGPT. Die Oberfläche und die fotografische Tiefengestaltung orientieren sich an [PMDDcam 0.4.0](https://github.com/chekento/PMDDcam). Der Video-Konverter ist ein zusätzliches Werkzeug.
 
-> **0.1.2 · Android Preview — aktueller geprüfter Build:** [APK direkt herunterladen](https://github.com/chekento/PMDDvid/releases/download/v0.1.3/PMDDvid-0.1.3.apk) · [SHA-256](https://github.com/chekento/PMDDvid/releases/download/v0.1.2/SHA256SUMS.txt) · [Release v0.1.2](https://github.com/chekento/PMDDvid/releases/tag/v0.1.2) · [erfolgreicher Build + Android-Gerätetest](https://github.com/chekento/PMDDvid/actions/runs/37145846028). Die Preview ist noch keine Freigabe für alle Android-Geräte.
+> **0.1.3 · Android Preview — aktueller geprüfter Build:** [APK direkt herunterladen](https://github.com/chekento/PMDDvid/releases/download/v0.1.3/PMDDvid-0.1.3.apk) · [SHA-256](https://github.com/chekento/PMDDvid/releases/download/v0.1.3/SHA256SUMS.txt) · [Release v0.1.3](https://github.com/chekento/PMDDvid/releases/tag/v0.1.3) · [erfolgreicher Build + Android-Gerätetest](https://github.com/chekento/PMDDvid/actions/runs/37190872071). Die Preview ist noch keine Freigabe für alle Android-Geräte.
 
 ## App Preview
 
 <table>
 <tr>
 <td width="50%"><img src="docs/images/app-camera.webp" alt="PMDDvid camera and live PMDD video recording"></td>
-<td width="50%"><img src="docs/images/app-depth-controls.webp" alt="PMDDvid signed Z depth controls and 32 depth layers"></td>
+<td width="50%"><img src="docs/images/app-depth-controls.webp" alt="PMDDvid signed Z depth controls with up to 64 depth layers"></td>
 </tr>
 <tr>
 <td width="50%"><img src="docs/images/app-video-converter.webp" alt="PMDDvid video converter with depth map and stereo output"></td>
