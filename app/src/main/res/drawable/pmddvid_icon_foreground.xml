@@ -1,10 +1,40 @@
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:gravity="center">
-        <inset
-            android:drawable="@drawable/pmddvid_app_icon"
-            android:insetLeft="10%"
-            android:insetTop="10%"
-            android:insetRight="10%"
-            android:insetBottom="10%" />
-    </item>
-</layer-list>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#221BE7FF"
+        android:pathData="M54,8 A46,46 0,1 0,54 100 A46,46 0,1 0,54 8" />
+
+    <path
+        android:fillColor="#CC0E1B2A"
+        android:strokeColor="#47E6FF"
+        android:strokeWidth="3"
+        android:pathData="M24,34 C20,34 17,37 17,41 L17,69 C17,73 20,76 24,76 L84,76 C88,76 91,73 91,69 L91,41 C91,37 88,34 84,34 L70,34 L64,26 L43,26 L37,34 Z" />
+
+    <path
+        android:fillColor="#5B2B86FF"
+        android:strokeColor="#B467FF"
+        android:strokeWidth="2"
+        android:pathData="M54,40 A15,15 0,1 0,54 70 A15,15 0,1 0,54 40" />
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M50,47 L50,63 L65,55 Z" />
+
+    <path
+        android:fillColor="#00FFFFFF"
+        android:strokeColor="#86F1D1"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M25,47 L36,47 M23,54 L34,54 M25,61 L36,61" />
+
+    <path
+        android:fillColor="#00FFFFFF"
+        android:strokeColor="#B467FF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M73,47 L84,47 M75,54 L86,54 M73,61 L84,61" />
+</vector>
