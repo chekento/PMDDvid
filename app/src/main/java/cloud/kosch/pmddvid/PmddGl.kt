@@ -31,7 +31,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
             uniform mat4 uMatrix,uDepthMatrix;
             uniform vec2 uPixel;
             const float uLinear=LINEAR_INPUT;
-            uniform float uMode,uUseDepth,uDepthGain,uLayers,uSeparation,uFocus,uRelief,uHaze,uBokeh,uSharp,uOcclusion,uExposure,uContrast,uSaturation,uVignette,uInvert,uEye,uParallax,uEdgeProtect;
+            uniform float uMode,uUseDepth,uGeometryTrust,uDepthGain,uLayers,uSeparation,uFocus,uRelief,uHaze,uBokeh,uSharp,uOcclusion,uExposure,uContrast,uSaturation,uVignette,uInvert,uEye,uParallax,uEdgeProtect;
             uniform float uVivid,uTechnique,uWarmth,uStyleSaturation,uStyleContrast,uLevels,uStyleMix,uInk,uLift,uToning;
             uniform vec3 uTint,uShadow,uHighlight;
             float lum(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
@@ -64,7 +64,8 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
               vec2 uv=vUv;vec3 original=source(uv);
               if(uMode>1.5){gl_FragColor=vec4(mix(original,pow(max(original,vec3(0.)),vec3(2.2)),uLinear),1.);return;}
               vec4 info=depthInfo(uv);
-              float trust=(1.-smoothstep(.07,.28,abs(lum(original)-info.g)))*info.a*uUseDepth;
+              float guideError=abs(lum(original)-info.g);
+              float trust=(1.-smoothstep(.020,.095,guideError))*info.a*uUseDepth;
               float d=mix(.5,mix(info.r,1.-info.r,uInvert),trust);
               if(uMode>.5){vec3 c=vec3(d);gl_FragColor=vec4(mix(c,pow(c,vec3(2.2)),uLinear),1.);return;}
               // Signed PMDD Z space. Nearer than focus = negative Z, focus = 0, farther = positive Z.
@@ -84,7 +85,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
 
               // Monoscopic same-frame parallax. No previous RGB frame is sampled, so this cannot
               // generate temporal RGB trails. Reprojection is rejected across depth/color edges.
-              if(abs(uEye)<=.01&&uParallax>.001&&trust>.02){
+              if(abs(uEye)<=.01&&uParallax>.001&&trust>.02&&uGeometryTrust>.001){
                 float monoShift=clamp((-z3/zDen)*uSeparation*uParallax*.020,-.038,.038);
                 vec2 p=uv+(vUv-.5)*monoShift;
                 vec4 pi=depthInfo(p);
@@ -92,17 +93,17 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
                 float depthSafe=1.-smoothstep(.035,.13,abs(d-pd));
                 float colorSafe=1.-smoothstep(.025,.14,abs(lum(original)-pi.g));
                 float safe=pi.a*depthSafe*mix(1.,colorSafe,uEdgeProtect);
-                uv=mix(uv,p,safe*trust);
+                uv=mix(uv,p,safe*trust*uGeometryTrust);
               }
 
               // Optional stereo uses signed Z for a bounded local view change.
-              if(abs(uEye)>.01){
+              if(abs(uEye)>.01&&uGeometryTrust>.001){
                 float shift=clamp(-z3*uEye*uSeparation*.010*uParallax,-.055,.055);
                 vec2 p=uv+vec2(shift,0.);
                 vec4 pi=depthInfo(p);
                 float other=mix(pi.r,1.-pi.r,uInvert);
                 float safe=(1.-smoothstep(.035,.13,abs(d-other)))*pi.a;
-                uv=mix(uv,p,safe);
+                uv=mix(uv,p,safe*uGeometryTrust);
               }
               vec3 rgb=source(uv);
               vec3 a=source(uv+vec2(uPixel.x,0.)),b=source(uv-vec2(uPixel.x,0.));
@@ -242,6 +243,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
         depth: DepthFrame?,
         mode: Int = 0,
         eye: Float = 0f,
+        geometryTrust: Float = 1f,
     ) {
         glUseProgram(program)
         val position = glGetAttribLocation(program, "aPosition")
@@ -274,11 +276,15 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
             Matrix.multiplyMM(mapping, 0, inverse, 0, matrix, 0)
         glUniformMatrix4fv(uniform("uDepthMatrix"), 1, false, mapping, 0)
         f("uMode", mode.toFloat())
-        f(
-            "uUseDepth",
+        val depthAgeSeconds =
+            if (depth == null) Float.POSITIVE_INFINITY
+            else ((System.nanoTime() - depth.sourceNs).coerceAtLeast(0L) / 1e9f)
+        // Tonal/relief depth may decay gently, but geometry must be much stricter.
+        val depthTrust =
             if (depth == null) 0f
-            else (1f - ((System.nanoTime() - depth.createdNs) / 1e9f - 2f) / 3f).coerceIn(0f, 1f),
-        )
+            else (1f - ((depthAgeSeconds - .18f) / 1.05f)).coerceIn(0f, 1f)
+        f("uUseDepth", depthTrust)
+        f("uGeometryTrust", if (depth == null) 0f else geometryTrust.coerceIn(0f, 1f))
         val r = recipe.normalized()
         val s = Styles.get(r.style)
         val radius = max(1f, min(width, height) / 280f)
