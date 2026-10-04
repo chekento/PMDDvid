@@ -59,6 +59,15 @@ class DeviceTest {
         )
     }
 
+    private fun evidence(name: String, video: StoredVideo) {
+        val temp = File(context.cacheDir, name)
+        context.contentResolver.openInputStream(video.uri)!!.use { input ->
+            temp.outputStream().use { input.copyTo(it) }
+        }
+        evidence(name, temp)
+        temp.delete()
+    }
+
     private fun evidence(name: String, bitmap: Bitmap) {
         val f = File(context.cacheDir, name)
         f.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -285,6 +294,37 @@ class DeviceTest {
         }
     }
 
+    private fun track(video: StoredVideo, type: String): Track {
+        val ex = MediaExtractor()
+        try {
+            ex.setDataSource(context, video.uri, null)
+            val i =
+                (0 until ex.trackCount).first {
+                    ex.getTrackFormat(it).getString(MediaFormat.KEY_MIME)!!.startsWith(type)
+                }
+            val f = ex.getTrackFormat(i)
+            ex.selectTrack(i)
+            val pts = mutableListOf<Long>()
+            while (ex.sampleTrackIndex >= 0) {
+                pts += ex.sampleTime
+                if (!ex.advance()) break
+            }
+            return Track(pts, f)
+        } finally {
+            ex.release()
+        }
+    }
+
+    private fun frame(video: StoredVideo): Bitmap {
+        val r = MediaMetadataRetriever()
+        return try {
+            r.setDataSource(context, video.uri)
+            requireNotNull(r.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST))
+        } finally {
+            r.release()
+        }
+    }
+
     private fun frame(file: File): Bitmap {
         val r = MediaMetadataRetriever()
         return try {
@@ -445,11 +485,27 @@ class DeviceTest {
             ) SystemClock.sleep(200)
             val recorded = store.all().single { it.name !in existing }
             evidence("camera-recording.mp4", recorded)
+            if (Build.VERSION.SDK_INT >= 29) {
+                val relative =
+                    context.contentResolver.query(
+                        recorded.uri,
+                        arrayOf(MediaStore.Video.Media.RELATIVE_PATH),
+                        null,
+                        null,
+                        null,
+                    )?.use { cursor ->
+                        if (cursor.moveToFirst()) cursor.getString(0) else null
+                    }
+                assertTrue(
+                    "Recorded file lives in Movies/PMDDvid",
+                    relative?.startsWith("Movies/PMDDvid") == true,
+                )
+            }
             android.util.Log.i(
                 "PMDDvidTest",
                 "Camera frames=${track(recorded, "video/").pts.size}; duration=${track(recorded, "video/").format}",
             )
-            assertTrue(recorded.length() > 1000)
+            assertTrue(recorded.sizeBytes > 1000)
             assertTrue(
                 "Camera effect produces encoded video frames",
                 track(recorded, "video/").pts.size > 5,
@@ -460,8 +516,8 @@ class DeviceTest {
             evidence("camera-recording.png", b)
             b.recycle()
             awaitUi(By.desc("Videos öffnen"), 10_000).click()
-            awaitUi(By.text(recorded.name), 10_000).click()
-            awaitUi(By.text("Datei speichern"), 10_000)
+            awaitUi(By.text(recorded.name.removeSuffix(".mp4")), 10_000).click()
+            awaitUi(By.text("Kopie exportieren …"), 10_000)
             shot("saved-video")
         }
     }
@@ -471,6 +527,9 @@ class DeviceTest {
         val info = context.packageManager.getApplicationInfo(context.packageName, 0)
         val name = context.resources.getResourceName(info.icon)
         assertTrue("Launcher icon comes from mipmap", name.contains(":mipmap/ic_launcher"))
+        val drawable = context.packageManager.getApplicationIcon(context.packageName)
+        assertNotNull("Launcher icon can be loaded from the installed APK", drawable)
+        assertTrue("Launcher icon has visible intrinsic size", drawable.intrinsicWidth > 0 && drawable.intrinsicHeight > 0)
     }
 
     private fun awaitUi(selector: BySelector, timeout: Long): UiObject2 {
