@@ -1,4 +1,4 @@
-[![Download PMDDvid 0.1.6 APK](docs/images/download-apk-banner-0.1.6.svg)](https://github.com/chekento/PMDDvid/releases/download/v0.1.6/PMDDvid-0.1.6.apk)
+[![Download PMDDvid 0.1.7 APK](docs/images/download-apk-banner-0.1.7.svg)](https://github.com/chekento/PMDDvid/releases/download/v0.1.7/PMDDvid-0.1.7.apk)
 
 # PMDDvid
 
@@ -9,7 +9,7 @@
 
 **PMDD direkt beim Filmen.** Aufnahmen und fertige Konvertierungen werden auf Android 10+ automatisch in **Movies/PMDDvid** gespeichert und direkt aus diesem Ordner in der App verwaltet. Native Android-Videokamera von Kolja Werner Schumann (KoSch), entwickelt mit ChatGPT. Die Oberfläche und die fotografische Tiefengestaltung orientieren sich an [PMDDcam 0.4.0](https://github.com/chekento/PMDDcam). Der Video-Konverter ist ein zusätzliches Werkzeug.
 
-> **0.1.6 · Android Preview — aktueller geprüfter Build:** [APK direkt herunterladen](https://github.com/chekento/PMDDvid/releases/download/v0.1.6/PMDDvid-0.1.6.apk) · [SHA-256](https://github.com/chekento/PMDDvid/releases/download/v0.1.6/SHA256SUMS.txt) · [Release v0.1.5](https://github.com/chekento/PMDDvid/releases/tag/v0.1.6) · [erfolgreicher Build + Android-Gerätetest](https://github.com/chekento/PMDDvid/actions/runs/37211218858). Die Preview ist noch keine Freigabe für alle Android-Geräte.
+> **0.1.7 · Android Preview — aktueller geprüfter Build:** [APK direkt herunterladen](https://github.com/chekento/PMDDvid/releases/download/v0.1.7/PMDDvid-0.1.7.apk) · [SHA-256](https://github.com/chekento/PMDDvid/releases/download/v0.1.7/SHA256SUMS.txt) · [Release v0.1.7](https://github.com/chekento/PMDDvid/releases/tag/v0.1.7) · [erfolgreicher Build + Android-Gerätetest](https://github.com/chekento/PMDDvid/actions/runs/37228110489). Die Preview ist noch keine Freigabe für alle Android-Geräte.
 
 ## Videoverwaltung
 
