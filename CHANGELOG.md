@@ -10,6 +10,7 @@
 - Launcher-Icon nicht mehr über einen Bitmap-Wrapper, sondern als echtes natives **Vector-/Adaptive-Icon** mit Kamera-, Play- und PMDD-Tiefenmotiv; separates Monochrome/Themed-Icon ergänzt.
 - Frontpage nutzt ein passendes SVG des gleichen PMDDvid-Icons.
 - Gerätetest prüft, dass neue Aufnahmen tatsächlich unter **Movies/PMDDvid** liegen und dass das installierte APK-Launcher-Icon geladen werden kann.
+- Release **v0.1.7** erfolgreich durch Build, Unit-Tests, Android Lint und Android-35-Gerätetest validiert; APK und SHA-256-Prüfsumme veröffentlicht.
 
 ## 0.1.6 · Flicker-Free Live PMDD / Adaptive Icon
 
