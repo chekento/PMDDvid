@@ -2,7 +2,7 @@
 
 # PMDDvid
 
-<p align="center"><img src="docs/images/pmddvid-app-icon.webp" alt="PMDDvid App Icon" width="180"></p>
+<p align="center"><img src="app/src/main/res/drawable/pmddvid_app_icon.webp" alt="PMDDvid App Icon" width="180"></p>
 
 
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-5b4bdb)](LICENSE)
