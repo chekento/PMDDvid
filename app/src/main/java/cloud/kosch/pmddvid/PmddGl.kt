@@ -31,7 +31,7 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
             uniform mat4 uMatrix,uDepthMatrix;
             uniform vec2 uPixel;
             const float uLinear=LINEAR_INPUT;
-            uniform float uMode,uUseDepth,uDepthGain,uLayers,uSeparation,uFocus,uRelief,uHaze,uBokeh,uSharp,uOcclusion,uExposure,uContrast,uSaturation,uVignette,uInvert,uEye;
+            uniform float uMode,uUseDepth,uDepthGain,uLayers,uSeparation,uFocus,uRelief,uHaze,uBokeh,uSharp,uOcclusion,uExposure,uContrast,uSaturation,uVignette,uInvert,uEye,uParallax,uEdgeProtect;
             uniform float uVivid,uTechnique,uWarmth,uStyleSaturation,uStyleContrast,uLevels,uStyleMix,uInk,uLift,uToning;
             uniform vec3 uTint,uShadow,uHighlight;
             float lum(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
@@ -71,18 +71,38 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
               float zDen=max(.001,uDepthGain);
               float z=(uFocus-d)*2.*uDepthGain;
               float zn=clamp(z/zDen,-1.,1.);
+              // Expand the middle of the depth range: more perceived separation without clipping
+              // the signed near/far endpoints.
+              float zCurve=sign(zn)*pow(abs(zn),.78);
               float layerCount=max(2.,uLayers);
-              float zLayer=(floor((zn*.5+.5)*(layerCount-1.)+.5)/(layerCount-1.)*2.-1.)*zDen;
-              // Strong layer separation without drawing artificial contour lines into RGB.
-              float z3=mix(z,zLayer,.72);
+              float zLayer=(floor((zCurve*.5+.5)*(layerCount-1.)+.5)/(layerCount-1.)*2.-1.)*zDen;
+              // Soft quantization keeps distinct planes while avoiding visible cardboard bands.
+              float z3=mix(zCurve*zDen,zLayer,.86);
               float nearZ=clamp(-z3/zDen,0.,1.);
               float farZ=clamp(z3/zDen,0.,1.);
               float absZ=clamp(abs(z3)/zDen,0.,1.);
-              // Optional stereo uses signed Z for a bounded local view change, never a painted edge.
+
+              // Monoscopic same-frame parallax. No previous RGB frame is sampled, so this cannot
+              // generate temporal RGB trails. Reprojection is rejected across depth/color edges.
+              if(abs(uEye)<=.01&&uParallax>.001&&trust>.02){
+                float monoShift=clamp((-z3/zDen)*uSeparation*uParallax*.020,-.038,.038);
+                vec2 p=uv+(vUv-.5)*monoShift;
+                vec4 pi=depthInfo(p);
+                float pd=mix(pi.r,1.-pi.r,uInvert);
+                float depthSafe=1.-smoothstep(.035,.13,abs(d-pd));
+                float colorSafe=1.-smoothstep(.025,.14,abs(lum(original)-pi.g));
+                float safe=pi.a*depthSafe*mix(1.,colorSafe,uEdgeProtect);
+                uv=mix(uv,p,safe*trust);
+              }
+
+              // Optional stereo uses signed Z for a bounded local view change.
               if(abs(uEye)>.01){
-                float shift=clamp(-z3*uEye*uSeparation*.008,-.045,.045);
+                float shift=clamp(-z3*uEye*uSeparation*.010*uParallax,-.055,.055);
                 vec2 p=uv+vec2(shift,0.);
-                float other=depthInfo(p).r;float safe=1.-smoothstep(.045,.15,abs(info.r-other));uv=mix(uv,p,safe);
+                vec4 pi=depthInfo(p);
+                float other=mix(pi.r,1.-pi.r,uInvert);
+                float safe=(1.-smoothstep(.035,.13,abs(d-other)))*pi.a;
+                uv=mix(uv,p,safe);
               }
               vec3 rgb=source(uv);
               vec3 a=source(uv+vec2(uPixel.x,0.)),b=source(uv-vec2(uPixel.x,0.));
@@ -116,18 +136,18 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
               float sl=lum(styled);styled=(mix(vec3(sl),styled,uStyleSaturation)-.5)*uStyleContrast+.5+vec3(uWarmth*.12,0.,-uWarmth*.15);
               styled+=((uShadow-.5)*(1.-gray)*(1.-gray)+(uHighlight-.5)*gray*gray)*uToning*.3;
               styled=mix(styled,vec3(1.),uLift);styled=mix(rgb,styled,uStyleMix);
-              float gain=min(6.,uDepthGain*(.8+.45*uDepthGain));
+              float gain=min(8.,uDepthGain*(.82+.38*uDepthGain));
               float artistic=step(.5,uTechnique);
               float retain=1.-uStyleMix*artistic*.86;
               if(uTechnique>5.5&&uTechnique<6.5)retain=1.-uStyleMix;
-              float guard=1.-smoothstep(.055,.22,abs(detail))*.9;
-              float local=clamp(detail*(uSharp*(.4+nearZ*.9)+uRelief*gain*(.14+absZ*.58)+uSeparation*gain*(nearZ-farZ)*.32)*guard*retain,-.12,.12);
-              float contact=max(-.045,min(0.,detail)*uOcclusion*gain*.09*(.3+.7*nearZ)*guard*retain);
-              float contrast=clamp(uContrast+uSeparation*gain*(nearZ-farZ)*.09,-.5,.8);
-              float haze=min(.2,uHaze*pow(farZ,1.35)*(.05+.025*uSeparation)*min(gain,2.5))*(1.-uVivid*uStyleMix*.7);
-              float blur=min(.85,retain*smoothstep(.04,.82,absZ)*uBokeh*(.16+.15*gain)*clamp(1.-edge*2.,.2,1.));
+              float guard=1.-smoothstep(.055,.28,edge)*uEdgeProtect*.72;
+              float local=clamp(detail*(uSharp*(.35+nearZ*.85)+uRelief*gain*(.16+absZ*.72)+uSeparation*gain*(nearZ-farZ)*.39)*guard*retain,-.17,.17);
+              float contact=max(-.065,min(0.,detail)*uOcclusion*gain*.12*(.25+.75*nearZ)*guard*retain);
+              float contrast=clamp(uContrast+uSeparation*gain*(nearZ-farZ)*.115,-.5,.8);
+              float haze=min(.24,uHaze*pow(farZ,1.22)*(.18+.08*uSeparation)*min(gain,3.0))*(1.-uVivid*uStyleMix*.58);
+              float blur=min(.78,retain*smoothstep(.08,.88,absZ)*uBokeh*(.13+.10*gain)*clamp(1.-edge*2.5,.15,1.));
               float radial=length(vUv-.5)*1.414;
-              float zTone=(nearZ-farZ)*uSeparation*.035;
+              float zTone=(nearZ-farZ)*uSeparation*.055+nearZ*nearZ*.018-farZ*farZ*.012;
               float tone=local+contact+zTone+uExposure*.3-uVignette*radial*radial*.22;
               vec3 result=depthTone(mix(styled,soft,blur),contrast,tone);
               result=mix(result,vec3(.8,.87,.94),haze);result=mix(vec3(lum(result)),result,uSaturation);
@@ -278,6 +298,8 @@ class PmddGl(private val external: Boolean, private val linearInput: Boolean = f
         f("uVignette", r.vignette)
         f("uInvert", if (r.invertDepth) 1f else 0f)
         f("uEye", eye)
+        f("uParallax", r.parallax)
+        f("uEdgeProtect", r.edgeProtection)
         f("uVivid", if (s.id == "vivid") 1f else 0f)
         f("uTechnique", s.technique.ordinal.toFloat())
         f("uWarmth", s.warmth)
