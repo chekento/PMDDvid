@@ -1,5 +1,19 @@
 # Änderungen
 
+## 0.1.3 · Clean Motion / Deep Z
+
+- Tiefen-Historie grundlegend überarbeitet: **kein rekursives Zurückschreiben geglätteter Depth-Frames** mehr. Dadurch können alte Tiefenwerte nicht über mehrere Frames zu sichtbaren Schleppen anwachsen.
+- Neuer bewegungs- und kantenabhängiger **Anti-Trail-Filter** mit History-Clamping auf die aktuelle lokale Tiefenumgebung, Scene-Cut-Reset sowie harter Verwerfung bei Disocclusion, großen Depth-Sprüngen und starken Luma-Kanten.
+- **Single-View-Parallaxe** aus dem aktuellen RGB-Frame ergänzt. Sie erhöht den räumlichen Eindruck, ohne vorherige RGB-Frames zu mischen.
+- Reprojektion wird an Farb- und Tiefenkanten automatisch zurückgenommen; neuer **Kantenschutz** verhindert Überziehen an Hecken, Gebäudekanten, Fahrzeugen, Schildern und anderen Freistellkanten.
+- Signierter Z-Raum auf bis zu **±6 Z**, Standard auf **48 weiche Layer**, Maximum auf **64 Layer** und stärkere Ebenentrennung erweitert.
+- Nichtlineare Z-Spreizung verstärkt besonders den mittleren Tiefenraum, ohne Vorder-/Hintergrund-Endpunkte abzuschneiden.
+- Relief, Kontaktwirkung, lokale Kontraststaffelung, Atmosphäre und Tiefenunschärfe neu auf den erweiterten Z-Raum abgestimmt.
+- Neue Regler: **Single-View-Parallaxe**, **Kantenschutz**, **Schlierenunterdrückung**; Ebenentrennung bis 150 %.
+- Neue Presets **Deep PMDD** und **Clean Depth** zusätzlich zur überarbeiteten Vivid-Standardvorgabe.
+- Live-Aufnahme und Video-Konverter verwenden dieselben Anti-Trail- und Tiefenparameter.
+- Neue Tests prüfen maximale Z-Werte, neue Layer-Grenzen und dass bewegte Tiefenkanten keine Historien-Schleppe aufbauen.
+
 ## 0.1.2 · Maximum Z Depth
 
 - Neuer signierter PMDD-Tiefenraum: Vordergrund **Z < 0**, Fokusebene **Z = 0**, Hintergrund **Z > 0**.
