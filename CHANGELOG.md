@@ -9,6 +9,8 @@
 - Damit kann stale/intermittent Depth im Live-Video weder als heller Nachzieher noch als pulsierender Schatten sichtbar werden.
 - Android-Launcher-Icon auf echte **mipmap/adaptive-icon**-Ressourcen umgestellt, inklusive Round-Icon und Android-Themed/Monochrome-Pfad.
 - Repository-Frontpage referenziert jetzt exakt dieselbe App-Icon-Ressource wie die Android-App.
+- Gerätetest prüft explizit, dass das installierte Launcher-Icon aus `mipmap/ic_launcher` stammt.
+- Release **v0.1.6** erfolgreich durch Build, Unit-Tests, Android Lint und Android-35-Gerätetest validiert; APK und SHA-256-Prüfsumme veröffentlicht.
 
 ## 0.1.5 · Flat-Surface Halo Kill
 
