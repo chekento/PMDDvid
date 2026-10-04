@@ -1229,15 +1229,31 @@ class MainActivity : ComponentActivity() {
         popup?.dismiss()
         val box =
             column().apply {
-                setPadding(dp(16), dp(14), dp(16), dp(14))
-                background = shape(panel, 20f)
+                setPadding(dp(12), dp(12), dp(12), dp(12))
+                background = shape(0xff0d1622.toInt(), 24f, 0x334b6680)
             }
-        box.addView(label(title, 17f, accent, true))
+
+        box.addView(
+            row().apply {
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(6), dp(2), dp(6), dp(10))
+                addView(
+                    column().apply {
+                        addView(label(title, 18f, Color.WHITE, true))
+                        addView(label("PMDDvid · Schnellzugriff", 11f, accent))
+                    },
+                    LinearLayout.LayoutParams(0, -2, 1f),
+                )
+                addView(label("●", 13f, accent, true))
+            }
+        )
+
         for (item in items) {
             val line =
                 row().apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    setPadding(0, dp(12), 0, dp(12))
+                    setPadding(dp(12), dp(11), dp(10), dp(11))
+                    background = shape(0xff131f2e.toInt(), 17f, 0x224b6680)
                     isClickable = true
                     isFocusable = true
                     setOnClickListener {
@@ -1246,29 +1262,62 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             line.addView(
-                ImageView(this).apply { setImageDrawable(UiIcon(item.icon, accent)) },
-                LinearLayout.LayoutParams(dp(28), dp(28)).apply { rightMargin = dp(12) },
+                FrameLayout(this).apply {
+                    background = shape(0x223fe5ff, 13f)
+                    addView(
+                        ImageView(this@MainActivity).apply {
+                            setImageDrawable(UiIcon(item.icon, accent))
+                            setPadding(dp(8), dp(8), dp(8), dp(8))
+                        },
+                        FrameLayout.LayoutParams(-1, -1),
+                    )
+                },
+                LinearLayout.LayoutParams(dp(42), dp(42)).apply { rightMargin = dp(12) },
             )
             line.addView(
                 column().apply {
                     addView(label(item.title, 14f, Color.WHITE, true))
-                    addView(label(item.subtitle, 11f, muted))
+                    addView(
+                        label(item.subtitle, 11f, muted).apply {
+                            maxLines = 2
+                            ellipsize = android.text.TextUtils.TruncateAt.END
+                            setPadding(0, dp(3), 0, 0)
+                        }
+                    )
+                },
+                LinearLayout.LayoutParams(0, -2, 1f),
+            )
+            line.addView(
+                label("›", 24f, muted, true).apply {
+                    gravity = Gravity.CENTER
+                    setPadding(dp(8), 0, 0, 0)
                 }
             )
-            box.addView(line)
+            box.addView(
+                line,
+                LinearLayout.LayoutParams(-1, -2).apply {
+                    topMargin = dp(4)
+                    bottomMargin = dp(4)
+                },
+            )
         }
+
         popup =
             PopupWindow(
-                    ScrollView(this).apply { addView(box) },
-                    min(resources.displayMetrics.widthPixels - dp(24), dp(332)),
-                    min(dp(90 + items.size * 67), resources.displayMetrics.heightPixels - dp(120)),
+                    ScrollView(this).apply {
+                        isFillViewport = true
+                        addView(box)
+                    },
+                    min(resources.displayMetrics.widthPixels - dp(24), dp(368)),
+                    min(dp(92 + items.size * 78), resources.displayMetrics.heightPixels - dp(110)),
                     true,
                 )
                 .apply {
-                    elevation = dp(20).toFloat()
-                    setBackgroundDrawable(shape(panel, 20f))
+                    elevation = dp(24).toFloat()
+                    setBackgroundDrawable(shape(0xff0d1622.toInt(), 24f))
                     isOutsideTouchable = true
-                    showAsDropDown(anchor, -dp(260), dp(6), Gravity.END)
+                    isFocusable = true
+                    showAsDropDown(anchor, -dp(300), dp(8), Gravity.END)
                 }
     }
 
@@ -1281,6 +1330,24 @@ class MainActivity : ComponentActivity() {
             layoutParams = LinearLayout.LayoutParams(dp(48), dp(48)).apply { leftMargin = dp(5) }
             setOnClickListener { action(this) }
             controls += this
+        }
+
+    private fun miniButton(text: String, action: () -> Unit): TextView =
+        TextView(this).apply {
+            this.text = text
+            textSize = 12f
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            setPadding(dp(10), dp(7), dp(10), dp(7))
+            background = shape(0xff1b2a3c.toInt(), 14f, 0x334b6680)
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { action() }
+            layoutParams =
+                LinearLayout.LayoutParams(-2, dp(38)).apply {
+                    leftMargin = dp(3)
+                    rightMargin = dp(3)
+                }
         }
 
     private fun button(text: String, action: () -> Unit): Button =
