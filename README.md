@@ -28,14 +28,14 @@
 - HD, Full HD oder UHD. Eine nicht verfügbare Aufnahmeauflösung wird gemeldet; die unterstützte Auswahl wird angezeigt.
 - PMDD verarbeitet **Vorschau und aufgezeichnete Bilddaten im selben CameraX-SurfaceProcessor**. Der Look ist anschließend im Video enthalten.
 - Aufnahme mit optionalem Mikrofon, Pause/Fortsetzen und sicherem Abschluss. Während der Aufnahme sind Kamera- und Lookwechsel gesperrt; die Ausrichtung bleibt fest.
-- 61 an Video angepasste Looks aus dem Fototool. Standardmäßig maximale **±4-Z-Tiefe**, **32 weiche Tiefenlayer** und volle Ebenentrennung; Vordergrund liegt auf negativem Z, die Fokusebene auf Z = 0 und der Hintergrund auf positivem Z. Tiefe, Layer, Fokusebene, Detailzeichnung, Lichtrelief, Atmosphäre und Tiefenunschärfe sind einstellbar.
+- 61 an Video angepasste Looks aus dem Fototool. Die neue 0.1.3-Pipeline unterstützt bis **±6 Z**, standardmäßig **48 weiche Tiefenlayer** und maximal 64 Layer; Vordergrund liegt auf negativem Z, die Fokusebene auf Z = 0 und der Hintergrund auf positivem Z. Zusätzlich einstellbar: Single-View-Parallaxe, Kantenschutz und Schlierenunterdrückung.
 - Lokale Videosammlung mit Wiedergabe, Teilen, Dateiexport, Galerieexport und Löschen. Android 8/9 exportiert über „Datei speichern“ oder „Teilen“.
 
 ## Ruhigere Tiefe
 
 MiDaS schätzt eine kontinuierliche relative Tiefenkarte. SSD erkennt Objektbereiche und setzt vorsichtige Tiefenanker. Diese Bereiche sind **keine pixelgenauen Objektmasken**. Die App läuft vollständig offline; beide Modelle sind in der APK enthalten.
 
-Die Tiefe wird über ähnliche Bildinhalte zeitlich stabilisiert. Ein Szenenwechsel oder ein deutlicher Bildunterschied verwirft unpassende Historie. RGB-Bilder werden nicht miteinander überblendet. Die natürliche Vorgabe zeichnet keine künstlichen Tiefenkonturen, Reliefkanten oder Wellen ins Video. Die künstlerischen Looks dürfen eigene Linien und Raster enthalten.
+Die Tiefe wird über ähnliche Bildinhalte zeitlich stabilisiert, aber **geglättete Tiefenergebnisse werden nicht wieder in die Historie zurückgespeist**. Bewegte Kanten, Disocclusions, starke Luma-Wechsel und große Depth-Sprünge verwerfen Historie früh; alte Tiefenwerte werden zusätzlich auf die aktuelle lokale Tiefenumgebung begrenzt. RGB-Bilder werden nicht temporal miteinander überblendet. Die neue Single-View-Parallaxe arbeitet ausschließlich aus dem aktuellen Frame und wird an Farb-/Tiefenkanten zurückgenommen. Die natürliche Vorgabe zeichnet keine künstlichen Tiefenkonturen, Reliefkanten oder Wellen ins Video.
 
 Live läuft höchstens eine KI-Analyse gleichzeitig auf der CPU. Die Kamera muss nicht auf jede Analyse warten. Bei Bewegung wird unpassende oder zu alte Tiefe abgeschwächt. Der Konverter berechnet dagegen **jeden gelieferten Quellframe** einzeln. Das kann deutlich länger als die Videolaufzeit dauern.
 
