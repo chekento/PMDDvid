@@ -1,5 +1,5 @@
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/pmddvid_icon_background" />
     <foreground android:drawable="@drawable/pmddvid_icon_foreground" />
-    <monochrome android:drawable="@drawable/pmddvid_icon_foreground" />
+    <monochrome android:drawable="@drawable/pmddvid_icon_monochrome" />
 </adaptive-icon>
