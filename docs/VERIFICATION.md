@@ -24,3 +24,11 @@ Die emulierte Kamera, der Software-Grafiktreiber und Android-Encoder decken kein
 - subjektive PMDD-Wirkung mit den Original-Beispielvideos des Nutzers.
 
 Es wird keine generelle Schlierenfreiheit oder vollständige Objektsegmentierung behauptet. Die automatisierten Tests prüfen konkrete Regressionen und technische Erhaltungseigenschaften.
+
+
+## 0.1.3 Anti-Trail / Deep-Z-Prüfung
+
+- Unit-Test `movingEdgeDoesNotAccumulateTemporalTrail`: eine wandernde harte Vorder-/Hintergrundkante darf keine alte Tiefenlage hinter sich herziehen.
+- Signed-Z-Test auf -6 / 0 / +6 sowie Standard 48 und Maximum 64 Layer.
+- Live- und Konverterpfad reichen dieselbe Schlierenunterdrückung an die DepthEngine weiter.
+- Shader-Parallaxe liest ausschließlich den aktuellen RGB-Frame; Reprojektion wird bei Farb-/Depth-Diskontinuitäten begrenzt.
