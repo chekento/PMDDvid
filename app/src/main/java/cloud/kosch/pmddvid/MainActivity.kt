@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
     private var conversionInput: Uri? = null
     private var conversionStatus: TextView? = null
     private var conversionProgress: ProgressBar? = null
-    private var pendingSave: File? = null
+    private var pendingSave: StoredVideo? = null
     private val ui = Handler(Looper.getMainLooper())
     private val controls = mutableListOf<View>()
     private val cameraPermission =
@@ -104,17 +104,19 @@ class MainActivity : ComponentActivity() {
         }
     private val saveDocument =
         registerForActivityResult(ActivityResultContracts.CreateDocument("video/mp4")) { uri ->
-            val file = pendingSave
+            val video = pendingSave
             pendingSave = null
-            if (uri != null && file != null)
+            if (uri != null && video != null)
                 lifecycleScope.launch {
                     try {
                         withContext(Dispatchers.IO) {
                             contentResolver.openOutputStream(uri)?.use { output ->
-                                file.inputStream().use { it.copyTo(output) }
+                                contentResolver.openInputStream(video.uri)?.use { input ->
+                                    input.copyTo(output)
+                                } ?: error("Quelldatei nicht lesbar")
                             } ?: error("Zieldatei nicht beschreibbar")
                         }
-                        message("Video gespeichert.")
+                        message("Videokopie gespeichert.")
                     } catch (e: Exception) {
                         message(e.message ?: "Speichern fehlgeschlagen")
                     }
@@ -666,7 +668,9 @@ class MainActivity : ComponentActivity() {
                     setStatus("Gespeichert · ${it.name}")
                     Toast.makeText(
                             this@MainActivity,
-                            "Video in der Sammlung gespeichert",
+                            if (Build.VERSION.SDK_INT >= 29)
+                                "Gespeichert in Movies/PMDDvid"
+                            else "Video in der Sammlung gespeichert",
                             Toast.LENGTH_SHORT,
                         )
                         .show()
@@ -865,100 +869,210 @@ class MainActivity : ComponentActivity() {
         val box =
             pageLayout(
                 "Deine Videos",
-                "Aufnahmen und konvertierte Ergebnisse bleiben lokal in der App.",
+                if (Build.VERSION.SDK_INT >= 29)
+                    "Direkt gespeichert in Movies/PMDDvid · lokal auf deinem Gerät."
+                else "Lokale PMDDvid-Videos auf diesem Gerät.",
             )
+
+        val videos = store.all()
+        val totalMb = videos.sumOf { it.sizeBytes } / 1048576.0
         box.addView(
-            button("Video importieren / konvertieren") {
+            column().apply {
+                setPadding(dp(16), dp(14), dp(16), dp(14))
+                background = shape(0xff111b29.toInt(), 18f, 0x334b6680)
+                addView(label("${videos.size} Videos · %.1f MB".format(totalMb), 17f, Color.WHITE, true))
+                addView(
+                    label(
+                        if (Build.VERSION.SDK_INT >= 29) "📁 Movies/PMDDvid" else "📁 App-Speicher",
+                        13f,
+                        accent,
+                    ).apply { setPadding(0, dp(5), 0, 0) }
+                )
+            },
+            LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) },
+        )
+
+        box.addView(
+            button("＋ Video importieren / konvertieren") {
                 pickVideo.launch(arrayOf("video/*", "application/octet-stream"))
             }
         )
-        val files = store.all()
-        if (files.isEmpty())
-            box.addView(label("Noch keine Videos. Starte deine erste Aufnahme.", 15f, muted))
-        files.forEach { file ->
-            val entry =
-                button(file.name) { showVideo(file) }
-                    .apply {
-                        isAllCaps = false
-                        textSize = 13f
-                    }
-            box.addView(entry)
-            val info = label("Informationen werden gelesen …", 12f, muted)
-            box.addView(info)
+
+        if (videos.isEmpty()) {
+            box.addView(
+                column().apply {
+                    gravity = Gravity.CENTER
+                    setPadding(dp(18), dp(42), dp(18), dp(42))
+                    addView(label("Noch keine PMDDvid-Videos", 18f, Color.WHITE, true).apply { gravity = Gravity.CENTER })
+                    addView(
+                        label("Starte deine erste Aufnahme – sie erscheint danach automatisch hier.", 13f, muted)
+                            .apply {
+                                gravity = Gravity.CENTER
+                                setPadding(0, dp(8), 0, 0)
+                            }
+                    )
+                }
+            )
+            return
+        }
+
+        videos.forEach { video ->
+            val card =
+                column().apply {
+                    setPadding(dp(12), dp(12), dp(12), dp(12))
+                    background = shape(0xff121c2a.toInt(), 20f, 0x334b6680)
+                }
+            val main = row().apply { gravity = Gravity.CENTER_VERTICAL }
+            val preview =
+                ImageView(this).apply {
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    background = shape(0xff09111b.toInt(), 14f)
+                    contentDescription = "Vorschau ${video.name}"
+                    setOnClickListener { showVideo(video) }
+                }
+            main.addView(
+                preview,
+                LinearLayout.LayoutParams(dp(122), dp(78)).apply { rightMargin = dp(12) },
+            )
+            val textBox = column()
+            textBox.addView(
+                label(video.name.removeSuffix(".mp4"), 15f, Color.WHITE, true).apply {
+                    maxLines = 2
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    setOnClickListener { showVideo(video) }
+                }
+            )
+            val info = label("Metadaten werden gelesen …", 12f, muted).apply { setPadding(0, dp(6), 0, 0) }
+            textBox.addView(info)
+            main.addView(textBox, LinearLayout.LayoutParams(0, -2, 1f))
+            card.addView(main)
+
+            val actions = row().apply {
+                gravity = Gravity.END
+                setPadding(0, dp(10), 0, 0)
+            }
+            actions.addView(miniButton("▶ Öffnen") { showVideo(video) })
+            actions.addView(miniButton("↗ Teilen") { shareVideo(video) })
+            actions.addView(miniButton("✎ Name") { renameVideo(video) })
+            actions.addView(miniButton("⌫") { deleteVideo(video) })
+            card.addView(actions)
+            box.addView(
+                card,
+                LinearLayout.LayoutParams(-1, -2).apply {
+                    topMargin = dp(7)
+                    bottomMargin = dp(7)
+                },
+            )
+
             lifecycleScope.launch {
-                val text = withContext(Dispatchers.IO) { store.description(file) }
-                info.text = text
+                val data =
+                    withContext(Dispatchers.IO) {
+                        store.description(video) to store.thumbnail(video)
+                    }
+                info.text = data.first
+                data.second?.let { preview.setImageBitmap(it) }
             }
         }
     }
 
-    private fun showVideo(file: File) {
+    private fun shareVideo(video: StoredVideo) {
+        startActivity(
+            Intent.createChooser(
+                Intent(Intent.ACTION_SEND).apply {
+                    type = "video/mp4"
+                    putExtra(Intent.EXTRA_STREAM, video.uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                },
+                "PMDDvid teilen",
+            )
+        )
+    }
+
+    private fun renameVideo(video: StoredVideo) {
+        val input =
+            EditText(this).apply {
+                setText(video.name.removeSuffix(".mp4"))
+                setSelection(text.length)
+                hint = "Videoname"
+                setSingleLine(true)
+            }
+        AlertDialog.Builder(this)
+            .setTitle("Video umbenennen")
+            .setView(input)
+            .setNegativeButton("Abbrechen", null)
+            .setPositiveButton("Speichern") { _, _ ->
+                lifecycleScope.launch {
+                    runCatching {
+                        withContext(Dispatchers.IO) { store.rename(video, input.text.toString()) }
+                    }.onSuccess {
+                        if (page == "player") showVideo(it) else showLibrary()
+                    }.onFailure { message(it.message ?: "Umbenennen fehlgeschlagen") }
+                }
+            }
+            .show()
+    }
+
+    private fun deleteVideo(video: StoredVideo) {
+        AlertDialog.Builder(this)
+            .setTitle("Video löschen?")
+            .setMessage(
+                if (Build.VERSION.SDK_INT >= 29)
+                    "${video.name}\nDie Datei wird aus Movies/PMDDvid gelöscht."
+                else "${video.name}\nDie Datei wird aus dem App-Speicher gelöscht."
+            )
+            .setNegativeButton("Behalten", null)
+            .setPositiveButton("Löschen") { _, _ ->
+                lifecycleScope.launch {
+                    val deleted = withContext(Dispatchers.IO) { store.delete(video) }
+                    if (deleted) {
+                        player?.release()
+                        player = null
+                        showLibrary()
+                    } else message("Video konnte nicht gelöscht werden.")
+                }
+            }
+            .show()
+    }
+
+    private fun showVideo(video: StoredVideo) {
         clearPage()
         page = "player"
-        val box = pageLayout(file.name, "Originaldateien beim Import werden nicht überschrieben.")
+        val box =
+            pageLayout(
+                video.name,
+                if (Build.VERSION.SDK_INT >= 29)
+                    "Movies/PMDDvid · direkt im Gerätespeicher"
+                else "Lokales PMDDvid-Video",
+            )
         val exo = ExoPlayer.Builder(this).build()
         player = exo
         box.addView(
             PlayerView(this).apply {
                 player = exo
                 useController = true
+                background = shape(0xff05080d.toInt(), 18f)
             },
-            LinearLayout.LayoutParams(-1, dp(340)),
+            LinearLayout.LayoutParams(-1, dp(340)).apply { bottomMargin = dp(10) },
         )
-        exo.setMediaItem(MediaItem.fromUri(store.uri(file)))
+        exo.setMediaItem(MediaItem.fromUri(video.uri))
         exo.prepare()
+
+        val actions = row().apply { gravity = Gravity.CENTER }
+        actions.addView(miniButton("↗ Teilen") { shareVideo(video) })
+        actions.addView(miniButton("✎ Umbenennen") { renameVideo(video) })
+        actions.addView(miniButton("⌫ Löschen") { deleteVideo(video) })
+        box.addView(actions)
+
         box.addView(
-            button("Teilen") {
-                startActivity(
-                    Intent.createChooser(
-                        Intent(Intent.ACTION_SEND).apply {
-                            type = "video/mp4"
-                            putExtra(Intent.EXTRA_STREAM, store.uri(file))
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        },
-                        "PMDDvid teilen",
-                    )
-                )
-            }
+            button("Mit PMDD-Konverter bearbeiten") { showConverter(video.uri) }
         )
         box.addView(
-            button("Datei speichern") {
-                pendingSave = file
-                saveDocument.launch(file.name)
+            button("Kopie exportieren …") {
+                pendingSave = video
+                saveDocument.launch(video.name)
             }
         )
-        if (Build.VERSION.SDK_INT >= 29)
-            box.addView(
-                button("In Galerie speichern") {
-                    lifecycleScope.launch {
-                        try {
-                            withContext(Dispatchers.IO) { store.saveToGallery(file) }
-                            message("In Movies/PMDDvid gespeichert.")
-                        } catch (e: Exception) {
-                            message(e.message ?: "Galerieexport fehlgeschlagen")
-                        }
-                    }
-                }
-            )
-        box.addView(button("Mit Konverter bearbeiten") { showConverter(store.uri(file)) })
-        box.addView(button("Zur Sammlung") { showLibrary() })
-        box.addView(
-            button("Video aus der App löschen") {
-                AlertDialog.Builder(this)
-                    .setTitle("Dieses Video löschen?")
-                    .setMessage(
-                        "${file.name}\nBereits in die Galerie oder als Datei gespeicherte Kopien bleiben erhalten."
-                    )
-                    .setNegativeButton("Behalten", null)
-                    .setPositiveButton("Löschen") { _, _ ->
-                        player?.release()
-                        player = null
-                        if (file.delete()) showLibrary()
-                        else message("Video konnte nicht gelöscht werden.")
-                    }
-                    .show()
-            }
-        )
+        box.addView(button("‹ Zur Videosammlung") { showLibrary() })
     }
 
     private fun showConverter(uri: Uri) {
@@ -1088,7 +1202,7 @@ class MainActivity : ComponentActivity() {
 
     private fun about() {
         message(
-            "PMDDvid 0.1.6\nVon Kolja Werner Schumann (KoSch) · kosch.cloud\n\nOffline-Videorekorder im Stil von PMDDcam 0.4.0. Vorschau und Aufnahme verwenden denselben PMDD-Shader. Lokale MiDaS-Tiefe und SSD-Objektanker; keine Cloud, keine App-Internetberechtigung.\n\nLive-KI aktualisiert die Tiefe so schnell wie das Gerät sie berechnet; die Kamera und der Encoder laufen unabhängig weiter. Die Tiefen-Historie wird bewegungs- und kantenabhängig begrenzt und nicht rekursiv verschmiert. Die Konversion analysiert jeden Frame.\n\nPMDD gestaltet wahrgenommene Tiefe. Ein normales MP4 reagiert nach dem Export nicht auf Kopfbewegung und enthält keine vollständige 3D-Szene.\n\nAufnahmen liegen zunächst im App-Speicher. Mit „Datei speichern“, „In Galerie speichern“ oder „Teilen“ sichern. Deinstallation löscht den App-Speicher. Beim Verlassen der App wird eine Aufnahme beendet.\n\nAusgabe: MP4, SDR/8 Bit. Die unterstützten Eingabecodecs hängen vom Gerät ab."
+            "PMDDvid 0.1.6\nVon Kolja Werner Schumann (KoSch) · kosch.cloud\n\nOffline-Videorekorder im Stil von PMDDcam 0.4.0. Vorschau und Aufnahme verwenden denselben PMDD-Shader. Lokale MiDaS-Tiefe und SSD-Objektanker; keine Cloud, keine App-Internetberechtigung.\n\nLive-KI aktualisiert die Tiefe so schnell wie das Gerät sie berechnet; die Kamera und der Encoder laufen unabhängig weiter. Die Tiefen-Historie wird bewegungs- und kantenabhängig begrenzt und nicht rekursiv verschmiert. Die Konversion analysiert jeden Frame.\n\nPMDD gestaltet wahrgenommene Tiefe. Ein normales MP4 reagiert nach dem Export nicht auf Kopfbewegung und enthält keine vollständige 3D-Szene.\n\nAufnahmen und fertige Konvertierungen werden unter Android 10+ automatisch in Movies/PMDDvid gespeichert und dort von der App verwaltet. Beim Verlassen der App wird eine Aufnahme beendet.\n\nAusgabe: MP4, SDR/8 Bit. Die unterstützten Eingabecodecs hängen vom Gerät ab."
         )
     }
 
