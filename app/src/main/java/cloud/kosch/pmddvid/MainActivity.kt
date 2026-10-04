@@ -264,9 +264,43 @@ class MainActivity : ComponentActivity() {
                         Item(
                             "compare",
                             "PMDD Vivid · Standard",
-                            "Offene Schatten · klare Ebenen · geschützte Lichter",
+                            "Tiefe + Kantenschutz + starke Schlierenunterdrückung",
                         ) {
                             recipe = Recipe()
+                            applyRecipe()
+                        },
+                        Item(
+                            "depth",
+                            "Deep PMDD",
+                            "Maximale Z-Tiefe · 64 Layer · stärkere Parallaxe",
+                        ) {
+                            recipe =
+                                Recipe(
+                                    depth = 6f,
+                                    layers = 64f,
+                                    separation = 1.35f,
+                                    relief = .52f,
+                                    parallax = .92f,
+                                    edgeProtection = .95f,
+                                    trailSuppression = .95f,
+                                )
+                            applyRecipe()
+                        },
+                        Item(
+                            "compare",
+                            "Clean Depth",
+                            "Minimales Nachziehen · ruhige, klare Kanten",
+                        ) {
+                            recipe =
+                                Recipe(
+                                    depth = 5f,
+                                    layers = 48f,
+                                    separation = 1.05f,
+                                    relief = .38f,
+                                    parallax = .52f,
+                                    edgeProtection = 1f,
+                                    trailSuppression = 1f,
+                                )
                             applyRecipe()
                         },
                     ),
@@ -754,13 +788,13 @@ class MainActivity : ComponentActivity() {
                 }
             )
         }
-        slider("3D-Z-Tiefe (±Z)", recipe.depth, 4f) { recipe.depth = it }
-        val layerCaption = label("Tiefenlayer · ${recipe.layers.roundToInt()} / 32", 14f)
+        slider("3D-Z-Tiefe (±Z)", recipe.depth, 6f) { recipe.depth = it }
+        val layerCaption = label("Tiefenlayer · ${recipe.layers.roundToInt()} / 64", 14f)
         box.addView(layerCaption)
         box.addView(
             SeekBar(this).apply {
-                max = 30
-                progress = recipe.layers.roundToInt().coerceIn(2, 32) - 2
+                max = 62
+                progress = recipe.layers.roundToInt().coerceIn(2, 64) - 2
                 setOnSeekBarChangeListener(
                     object : SeekBar.OnSeekBarChangeListener {
                         override fun onStartTrackingTouch(s: SeekBar) {}
@@ -768,7 +802,7 @@ class MainActivity : ComponentActivity() {
                         override fun onProgressChanged(s: SeekBar, value: Int, user: Boolean) {
                             if (user) {
                                 recipe.layers = (value + 2).toFloat()
-                                layerCaption.text = "Tiefenlayer · ${value + 2} / 32"
+                                layerCaption.text = "Tiefenlayer · ${value + 2} / 64"
                                 applyRecipe()
                             }
                         }
@@ -777,7 +811,10 @@ class MainActivity : ComponentActivity() {
             }
         )
         slider("Fokusebene (Z = 0)", recipe.focus) { recipe.focus = it }
-        slider("Ebenentrennung", recipe.separation) { recipe.separation = it }
+        slider("Ebenentrennung", recipe.separation, 1.5f) { recipe.separation = it }
+        slider("Single-View-Parallaxe", recipe.parallax) { recipe.parallax = it }
+        slider("Kantenschutz", recipe.edgeProtection) { recipe.edgeProtection = it }
+        slider("Schlierenunterdrückung", recipe.trailSuppression) { recipe.trailSuppression = it }
         slider("Detailzeichnung", recipe.sharpness) { recipe.sharpness = it }
         slider("Lichtrelief", recipe.relief) { recipe.relief = it }
         slider("Ferne / Atmosphäre", recipe.haze) { recipe.haze = it }
@@ -805,7 +842,7 @@ class MainActivity : ComponentActivity() {
         )
         box.addView(
             label(
-                "Signierter PMDD-Z-Raum: Vordergrund liegt auf negativem Z, die Fokusebene auf Z = 0 und der Hintergrund auf positivem Z. Bis zu 32 weiche Layer; keine eingebrannten Tiefenkonturen oder bewegten Wellen.",
+                "Signierter PMDD-Z-Raum: Vordergrund liegt auf negativem Z, die Fokusebene auf Z = 0 und der Hintergrund auf positivem Z. Bis zu 64 weiche Layer und ±6 Z. Die Single-View-Parallaxe nutzt nur den aktuellen Frame; Kantenschutz und Schlierenunterdrückung verhindern Nachziehen an Bewegung und Freistellkanten.",
                 12f,
                 muted,
             )
@@ -1051,7 +1088,7 @@ class MainActivity : ComponentActivity() {
 
     private fun about() {
         message(
-            "PMDDvid 0.1.0\nVon Kolja Werner Schumann (KoSch) · kosch.cloud\n\nOffline-Videorekorder im Stil von PMDDcam 0.4.0. Vorschau und Aufnahme verwenden denselben PMDD-Shader. Lokale MiDaS-Tiefe und SSD-Objektanker; keine Cloud, keine App-Internetberechtigung.\n\nLive-KI aktualisiert die Tiefe so schnell wie das Gerät sie berechnet; die Kamera und der Encoder laufen unabhängig weiter. Bewege die Kamera ruhig. Die Konversion analysiert jeden Frame.\n\nPMDD gestaltet wahrgenommene Tiefe. Ein normales MP4 reagiert nach dem Export nicht auf Kopfbewegung und enthält keine vollständige 3D-Szene.\n\nAufnahmen liegen zunächst im App-Speicher. Mit „Datei speichern“, „In Galerie speichern“ oder „Teilen“ sichern. Deinstallation löscht den App-Speicher. Beim Verlassen der App wird eine Aufnahme beendet.\n\nAusgabe: MP4, SDR/8 Bit. Die unterstützten Eingabecodecs hängen vom Gerät ab."
+            "PMDDvid 0.1.3\nVon Kolja Werner Schumann (KoSch) · kosch.cloud\n\nOffline-Videorekorder im Stil von PMDDcam 0.4.0. Vorschau und Aufnahme verwenden denselben PMDD-Shader. Lokale MiDaS-Tiefe und SSD-Objektanker; keine Cloud, keine App-Internetberechtigung.\n\nLive-KI aktualisiert die Tiefe so schnell wie das Gerät sie berechnet; die Kamera und der Encoder laufen unabhängig weiter. Die Tiefen-Historie wird bewegungs- und kantenabhängig begrenzt und nicht rekursiv verschmiert. Die Konversion analysiert jeden Frame.\n\nPMDD gestaltet wahrgenommene Tiefe. Ein normales MP4 reagiert nach dem Export nicht auf Kopfbewegung und enthält keine vollständige 3D-Szene.\n\nAufnahmen liegen zunächst im App-Speicher. Mit „Datei speichern“, „In Galerie speichern“ oder „Teilen“ sichern. Deinstallation löscht den App-Speicher. Beim Verlassen der App wird eine Aufnahme beendet.\n\nAusgabe: MP4, SDR/8 Bit. Die unterstützten Eingabecodecs hängen vom Gerät ab."
         )
     }
 
