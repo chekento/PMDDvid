@@ -35,7 +35,7 @@
 
 MiDaS schätzt eine kontinuierliche relative Tiefenkarte. SSD erkennt Objektbereiche und setzt vorsichtige Tiefenanker. Diese Bereiche sind **keine pixelgenauen Objektmasken**. Die App läuft vollständig offline; beide Modelle sind in der APK enthalten.
 
-Die Tiefe wird über ähnliche Bildinhalte zeitlich stabilisiert, aber **geglättete Tiefenergebnisse werden nicht wieder in die Historie zurückgespeist**. Bewegte Kanten, Disocclusions, starke Luma-Wechsel und große Depth-Sprünge verwerfen Historie früh; alte Tiefenwerte werden zusätzlich auf die aktuelle lokale Tiefenumgebung begrenzt. RGB-Bilder werden nicht temporal miteinander überblendet. Die neue Single-View-Parallaxe arbeitet ausschließlich aus dem aktuellen Frame und wird an Farb-/Tiefenkanten zurückgenommen. Die natürliche Vorgabe zeichnet keine künstlichen Tiefenkonturen, Reliefkanten oder Wellen ins Video.
+Die Tiefe wird über ähnliche Bildinhalte zeitlich stabilisiert. Zusätzlich trennt 0.1.4 den Quellzeitpunkt eines analysierten Kameraframes vom Ende der KI-Inferenz: veraltete Live-Depth darf keine Geometrie/Parallaxe mehr verschieben. Tonale Tiefenwirkung kann kurz auslaufen, während geometrisches Reprojection-Trust sehr aggressiv auf null fällt. RGB-Bilder werden weiterhin nicht temporal miteinander überblendet.
 
 Live läuft höchstens eine KI-Analyse gleichzeitig auf der CPU. Die Kamera muss nicht auf jede Analyse warten. Bei Bewegung wird unpassende oder zu alte Tiefe abgeschwächt. Der Konverter berechnet dagegen **jeden gelieferten Quellframe** einzeln. Das kann deutlich länger als die Videolaufzeit dauern.
 
