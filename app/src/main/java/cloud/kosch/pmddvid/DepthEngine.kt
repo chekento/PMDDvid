@@ -14,6 +14,9 @@ import kotlin.math.*
 data class DepthFrame(
     val pixels: ByteBuffer,
     val matrix: FloatArray,
+    /** Timestamp of the camera/video frame that was analyzed. */
+    val sourceNs: Long,
+    /** Timestamp at which inference finished. Useful for diagnostics only. */
     val createdNs: Long,
     val objectCount: Int,
     val inferenceMs: Long,
@@ -254,12 +257,14 @@ class DepthEngine(private val context: Context) : Closeable {
             pixels.put(255.toByte())
         }
         pixels.rewind()
+        val finished = System.nanoTime()
         return DepthFrame(
             pixels,
             matrix.clone(),
-            System.nanoTime(),
+            timeNs,
+            finished,
             lastObjects.size,
-            (System.nanoTime() - begin) / 1_000_000,
+            (finished - begin) / 1_000_000,
         )
     }
 
