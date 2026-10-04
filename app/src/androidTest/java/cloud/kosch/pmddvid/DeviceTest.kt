@@ -466,6 +466,13 @@ class DeviceTest {
         }
     }
 
+    @Test
+    fun launcherIconUsesAdaptiveMipmapResource() {
+        val info = context.packageManager.getApplicationInfo(context.packageName, 0)
+        val name = context.resources.getResourceName(info.icon)
+        assertTrue("Launcher icon comes from mipmap", name.contains(":mipmap/ic_launcher"))
+    }
+
     private fun awaitUi(selector: BySelector, timeout: Long): UiObject2 {
         val deadline = SystemClock.uptimeMillis() + timeout
         do {
@@ -474,6 +481,12 @@ class DeviceTest {
             if (device.hasObject(By.pkg("android").text("Quickstep isn't responding"))) {
                 shot("launcher-anr")
                 device.findObject(By.res("android", "aerr_close"))?.click()
+            }
+            if (device.hasObject(By.pkg("android").textContains("Process system isn't responding"))) {
+                shot("system-anr")
+                device.findObject(By.pkg("android").text("Wait"))?.click()
+                    ?: device.findObject(By.res("android", "aerr_wait"))?.click()
+                    ?: device.findObject(By.res("android", "aerr_close"))?.click()
             }
             device.findObject(selector)?.let {
                 return it
