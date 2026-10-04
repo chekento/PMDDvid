@@ -193,7 +193,14 @@ class DeviceTest {
                 256,
                 256,
                 Recipe(depth = 2.5f, haze = 0f, vignette = 0f),
-                DepthFrame(depthBytes, PmddGl.identity(), System.nanoTime(), 0, 0),
+                DepthFrame(
+                    depthBytes,
+                    PmddGl.identity(),
+                    System.nanoTime(),
+                    System.nanoTime(),
+                    0,
+                    0,
+                ),
             )
             val output = ByteBuffer.allocateDirect(65536 * 4)
             glReadPixels(0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, output)
