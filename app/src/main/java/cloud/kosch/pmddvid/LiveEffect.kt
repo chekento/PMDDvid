@@ -139,7 +139,9 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
             )
         makeCurrent(dummy)
         renderer = PmddGl(true)
-        state("KI-Tiefe wird lokal vorbereitet …", false)
+        // Recording does not need to block on the first local depth inference. PMDD/Vivid can
+        // render immediately; depth is introduced only when a trustworthy map becomes available.
+        state("PMDD bereit · KI-Tiefe wird lokal ergänzt …", true)
     }
 
     private fun makeCurrent(surface: EGLSurface) {
@@ -263,11 +265,12 @@ class LiveEffect(context: Context, private val state: (String, Boolean) -> Unit)
                         }
                     } catch (error: Throwable) {
                         if (!closing) {
+                            depth = null
+                            lastInferenceMs = 0L
                             state(
-                                "KI nicht verfügbar: ${error.message}. Originalmodus bleibt nutzbar.",
-                                false,
+                                "PMDD aktiv · KI-Tiefe vorübergehend nicht verfügbar: ${error.message}",
+                                true,
                             )
-                            original = true
                         }
                     } finally {
                         bitmap.recycle()
