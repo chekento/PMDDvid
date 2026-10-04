@@ -1,5 +1,15 @@
 # Änderungen
 
+## 0.1.4 · Live Depth Freshness / No-Trail Geometry
+
+- Schlieren aus dem realen 0.1.3-Testclip erneut analysiert. Hauptursache war nicht mehr RGB-Frame-Blending, sondern **geometrische Reprojektion mit einer bereits veralteten Tiefenkarte** während Kamerabewegung.
+- `DepthFrame` speichert jetzt getrennt den **Quellzeitpunkt des analysierten Kameraframes** und den Zeitpunkt, an dem die KI-Inferenz fertig wurde. Eine gerade fertig berechnete Depth gilt damit nicht mehr fälschlich als bildaktuell.
+- Live-Rendering trennt nun **Depth-Vertrauen** von **Geometrie-Vertrauen**: Relief/Ton darf kurz weich auslaufen, räumliche Pixelverschiebung/Parallaxe wird bei veralteter Depth sehr schnell auf null gesetzt.
+- Geometrische Live-Parallaxe ist nur noch innerhalb eines sehr kurzen Freshness-Fensters aktiv. Bei normaler lokaler MiDaS-Inferenz wird dadurch eine veraltete Depth-Kante nicht mehr auf einen neueren RGB-Frame verschoben.
+- RGB/Depth-Guide-Abgleich deutlich verschärft; Bereiche mit bereits kleiner Luma-Abweichung verlieren Depth-Vertrauen früher.
+- Stereo-/Offline-Konverter bleibt voll geometrisch, weil dort RGB und Depth synchron für denselben Quellframe berechnet werden.
+- Gemeinsamer Renderer erhält explizite Parameter für `depthTrust` und `geometryTrust`, statt intern inkompatible Live-/Medienzeitstempel zu vergleichen.
+
 ## 0.1.3 · Clean Motion / Deep Z
 
 - Tiefen-Historie grundlegend überarbeitet: **kein rekursives Zurückschreiben geglätteter Depth-Frames** mehr. Dadurch können alte Tiefenwerte nicht über mehrere Frames zu sichtbaren Schleppen anwachsen.
