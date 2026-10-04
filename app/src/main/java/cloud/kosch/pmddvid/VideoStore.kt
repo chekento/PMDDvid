@@ -84,7 +84,12 @@ class VideoStore(private val context: Context) {
                     null,
                 )?.use { cursor ->
                     if (!cursor.moveToFirst()) file.length() to System.currentTimeMillis()
-                    else cursor.getLong(0) to (cursor.getLong(1) * 1000L)
+                    else {
+                        val reportedSize = cursor.getLong(0)
+                        val reportedModified = cursor.getLong(1) * 1000L
+                        (if (reportedSize > 0L) reportedSize else file.length()) to
+                            (if (reportedModified > 0L) reportedModified else System.currentTimeMillis())
+                    }
                 } ?: (file.length() to System.currentTimeMillis())
             return StoredVideo(target, file.name, stored.second, stored.first)
         } catch (e: Exception) {
