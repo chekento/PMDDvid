@@ -2,11 +2,14 @@
 
 # PMDDvid
 
+<p align="center"><img src="docs/images/pmddvid-app-icon.webp" alt="PMDDvid App Icon" width="180"></p>
+
+
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-5b4bdb)](LICENSE)
 
 **PMDD direkt beim Filmen.** Native Android-Videokamera von Kolja Werner Schumann (KoSch), entwickelt mit ChatGPT. Die Oberfläche und die fotografische Tiefengestaltung orientieren sich an [PMDDcam 0.4.0](https://github.com/chekento/PMDDcam). Der Video-Konverter ist ein zusätzliches Werkzeug.
 
-> **0.1.4 · Android Preview — aktueller geprüfter Build:** [APK direkt herunterladen](https://github.com/chekento/PMDDvid/releases/download/v0.1.4/PMDDvid-0.1.4.apk) · [SHA-256](https://github.com/chekento/PMDDvid/releases/download/v0.1.4/SHA256SUMS.txt) · [Release v0.1.4](https://github.com/chekento/PMDDvid/releases/tag/v0.1.4) · [erfolgreicher Build + Android-Gerätetest](https://github.com/chekento/PMDDvid/actions/runs/37206515397). Die Preview ist noch keine Freigabe für alle Android-Geräte.
+> **0.1.5 · Android Preview — Build läuft:** [APK direkt herunterladen](https://github.com/chekento/PMDDvid/releases/download/v0.1.4/PMDDvid-0.1.4.apk) · [SHA-256](https://github.com/chekento/PMDDvid/releases/download/v0.1.4/SHA256SUMS.txt) · [Release v0.1.4](https://github.com/chekento/PMDDvid/releases/tag/v0.1.4) · [erfolgreicher Build + Android-Gerätetest](https://github.com/chekento/PMDDvid/actions/runs/37206515397). Die Preview ist noch keine Freigabe für alle Android-Geräte.
 
 ## App Preview
 
@@ -28,7 +31,7 @@
 - HD, Full HD oder UHD. Eine nicht verfügbare Aufnahmeauflösung wird gemeldet; die unterstützte Auswahl wird angezeigt.
 - PMDD verarbeitet **Vorschau und aufgezeichnete Bilddaten im selben CameraX-SurfaceProcessor**. Der Look ist anschließend im Video enthalten.
 - Aufnahme mit optionalem Mikrofon, Pause/Fortsetzen und sicherem Abschluss. Während der Aufnahme sind Kamera- und Lookwechsel gesperrt; die Ausrichtung bleibt fest.
-- 61 an Video angepasste Looks aus dem Fototool. Die neue 0.1.3-Pipeline unterstützt bis **±6 Z**, standardmäßig **48 weiche Tiefenlayer** und maximal 64 Layer; Vordergrund liegt auf negativem Z, die Fokusebene auf Z = 0 und der Hintergrund auf positivem Z. Zusätzlich einstellbar: Single-View-Parallaxe, Kantenschutz und Schlierenunterdrückung.
+- 61 an Video angepasste Looks aus dem Fototool. Die 0.1.5-Pipeline unterstützt bis **±6 Z**, standardmäßig **48 weiche Tiefenlayer** und maximal 64 Layer; Vordergrund liegt auf negativem Z, die Fokusebene auf Z = 0 und der Hintergrund auf positivem Z. Zusätzlich einstellbar: Single-View-Parallaxe, Kantenschutz und Schlierenunterdrückung.
 - Lokale Videosammlung mit Wiedergabe, Teilen, Dateiexport, Galerieexport und Löschen. Android 8/9 exportiert über „Datei speichern“ oder „Teilen“.
 
 ## Ruhigere Tiefe
