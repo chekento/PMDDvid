@@ -5,15 +5,18 @@ import org.json.JSONObject
 
 /** All edits are a recipe. Neither this nor the renderer ever writes to the original. */
 data class Recipe(
-    var depth: Float = 4f,
-    var layers: Float = 32f,
-    var separation: Float = 1f,
+    var depth: Float = 6f,
+    var layers: Float = 48f,
+    var separation: Float = 1.15f,
     var focus: Float = .5f,
-    var relief: Float = .35f,
-    var haze: Float = .06f,
-    var bokeh: Float = .12f,
-    var sharpness: Float = .25f,
-    var occlusion: Float = .12f,
+    var relief: Float = .45f,
+    var haze: Float = .07f,
+    var bokeh: Float = .10f,
+    var sharpness: Float = .22f,
+    var occlusion: Float = .35f,
+    var parallax: Float = .72f,
+    var edgeProtection: Float = .92f,
+    var trailSuppression: Float = .90f,
     var vignette: Float = .06f,
     var exposure: Float = 0f,
     var contrast: Float = .05f,
@@ -25,15 +28,18 @@ data class Recipe(
 ) {
     fun normalized(): Recipe =
         copy(
-            depth = depth.safe(4f, 0f, 4f),
-            layers = layers.safe(32f, 2f, 32f),
-            separation = separation.safe(1f),
+            depth = depth.safe(6f, 0f, 6f),
+            layers = layers.safe(48f, 2f, 64f),
+            separation = separation.safe(1.15f, 0f, 1.5f),
             focus = focus.safe(.5f),
-            relief = relief.safe(.35f),
-            haze = haze.safe(.06f),
-            bokeh = bokeh.safe(.12f),
-            sharpness = sharpness.safe(.25f),
-            occlusion = occlusion.safe(.12f),
+            relief = relief.safe(.45f),
+            haze = haze.safe(.07f),
+            bokeh = bokeh.safe(.10f),
+            sharpness = sharpness.safe(.22f),
+            occlusion = occlusion.safe(.35f),
+            parallax = parallax.safe(.72f),
+            edgeProtection = edgeProtection.safe(.92f),
+            trailSuppression = trailSuppression.safe(.90f),
             vignette = vignette.safe(.06f),
             exposure = exposure.safe(0f, -1f, 1f),
             contrast = contrast.safe(.05f, -.5f, .8f),
@@ -88,7 +94,7 @@ object DepthSpace {
     fun signedZ(depth: Float, focus: Float, gain: Float): Float {
         val d = depth.safe(.5f)
         val f = focus.safe(.5f)
-        val g = gain.safe(0f, 0f, 4f)
+        val g = gain.safe(0f, 0f, 6f)
         return (f - d) * 2f * g
     }
 }
